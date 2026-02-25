@@ -1,0 +1,10 @@
+project_id = "immqshucxpiidmfvcpja"
+
+[functions.submit-lead]
+verify_jwt = false
+
+[functions.meta-conversions]
+verify_jwt = false
+
+[functions.admin-products]
+verify_jwt = false

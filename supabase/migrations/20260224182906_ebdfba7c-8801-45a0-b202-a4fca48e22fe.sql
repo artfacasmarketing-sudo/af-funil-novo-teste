@@ -1,0 +1,1 @@
+ALTER TABLE public.leads ADD COLUMN selected_products text[] DEFAULT NULL;

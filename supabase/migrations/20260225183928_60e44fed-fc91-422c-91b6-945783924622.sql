@@ -1,0 +1,1 @@
+ALTER TABLE public.products ADD COLUMN color_skus jsonb NOT NULL DEFAULT '{}';
