@@ -33,7 +33,6 @@ const TOTAL_QUESTIONS = 10;
 
 export function ProductSelectionScreen({ responses, onConfirm, onClickSFX }: ProductSelectionScreenProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [minDelayPassed, setMinDelayPassed] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const isJumping = useRef(false);
   const mounted = useRef(false);
@@ -41,12 +40,6 @@ export function ProductSelectionScreen({ responses, onConfirm, onClickSFX }: Pro
   // Scroll to top on mount
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
-  }, []);
-
-  // Minimum loader display time
-  useEffect(() => {
-    const timer = setTimeout(() => setMinDelayPassed(true), 1000);
-    return () => clearTimeout(timer);
   }, []);
 
   const { data: dbProducts, isLoading } = useQuery({
@@ -175,13 +168,8 @@ export function ProductSelectionScreen({ responses, onConfirm, onClickSFX }: Pro
 
       {/* Carousel with infinite scroll */}
       <div className="relative mt-6 sm:mt-8">
-        {(isLoading || !minDelayPassed) ? (
-          <div className="flex flex-col items-center justify-center py-16 sm:py-20 animate-fade-in">
-            <div className="w-12 h-12 border-3 border-primary/20 border-t-primary rounded-full animate-spin-slow mb-6" />
-            <p className="text-muted-foreground text-sm sm:text-base font-medium">
-              Encontrando as melhores opções para você...
-            </p>
-          </div>
+        {isLoading ? (
+          <div className="py-16 sm:py-20" />
         ) : (
           <div
             key={filteredProducts.length}
