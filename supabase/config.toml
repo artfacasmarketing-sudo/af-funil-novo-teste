@@ -1,5 +1,11 @@
 project_id = "immqshucxpiidmfvcpja"
 
+# verify_jwt = false: estas funções são públicas e chamadas diretamente do browser,
+# sem usuário autenticado no Supabase. A segurança é garantida por:
+#   - submit-lead: validação Zod + rate limiting por IP
+#   - meta-conversions: validação Zod + rate limiting por IP
+#   - admin-products: autenticação via ADMIN_PASSWORD + rate limiting por IP
+
 [functions.submit-lead]
 verify_jwt = false
 
