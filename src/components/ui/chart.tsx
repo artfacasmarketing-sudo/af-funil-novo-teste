@@ -66,6 +66,9 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   }
 
   return (
+    // Safe: __html é gerado exclusivamente a partir de THEMES (constante de compilação)
+    // e dos valores de color/theme do ChartConfig passado pelo componente pai.
+    // Nenhum dado de usuário é interpolado aqui.
     <style
       dangerouslySetInnerHTML={{
         __html: Object.entries(THEMES)
