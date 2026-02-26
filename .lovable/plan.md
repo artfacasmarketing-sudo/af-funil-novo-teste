@@ -1,27 +1,27 @@
 
 
-## Plano: Corrigir bugs de carregamento na vitrine de produtos
+## Plano: Trocar skeletons por loader com copy na vitrine de produtos
 
-### Problemas identificados
-
-1. **Produtos "atrasados"**: A vitrine usa `useQuery` para buscar produtos do banco, mas enquanto carrega, usa o array estático local (desatualizado). Quando os dados do banco chegam, a lista muda abruptamente causando flash visual.
-
-2. **Scroll infinito quebra na troca de dados**: Quando `dbProducts` chega do banco e substitui os dados estáticos, `singleBlockWidth` e a posição do scroll ficam dessincronizados, causando comportamento errático no carrossel.
-
-3. **Sem estado de loading**: Nenhum skeleton/spinner enquanto os produtos estão sendo buscados do banco.
-
-### Correções
+### Mudança
 
 **Arquivo:** `src/components/diagnostic/ProductSelectionScreen.tsx`
 
-1. Adicionar estado de loading com skeletons enquanto produtos carregam do banco
-2. Só renderizar o carrossel depois que `dbProducts` estiver pronto (evita dupla renderização)
-3. Resetar `singleBlockWidth` e `mounted` quando `filteredProducts` muda, garantindo re-inicialização correta do scroll infinito
+Substituir os skeleton cards por um loader centralizado com spinner + texto motivacional, similar ao `ProcessingScreen.tsx` mas mais curto e simples.
 
-### Detalhes tecnicos
+### Implementação
 
-- Usar `isLoading` do `useQuery` para mostrar skeleton cards no lugar do carrossel vazio
-- Condicionar a renderização do carrossel a `!isLoading` para evitar que o scroll infinito se inicialize com dados temporários e depois quebre ao receber os dados finais
-- Adicionar `key={filteredProducts.length}` no container do scroll para forçar re-mount quando a lista de produtos muda
-- Resetar `mounted.current = false` no useEffect de inicialização do scroll
+No bloco `{isLoading ? (...) : (...)}` (linhas 171-184), trocar os skeletons por:
+
+```tsx
+<div className="flex flex-col items-center justify-center py-16 sm:py-20 animate-fade-in">
+  <div className="w-12 h-12 border-3 border-primary/20 border-t-primary rounded-full animate-spin-slow mb-6" />
+  <p className="text-muted-foreground text-sm sm:text-base font-medium">
+    Encontrando as melhores opções para você...
+  </p>
+</div>
+```
+
+- Remove import do `Skeleton` (não será mais usado)
+- Reutiliza a animação `animate-spin-slow` já existente no projeto (usada no `ProcessingScreen`)
+- Loader minimalista, centralizado, sem skeletons
 
