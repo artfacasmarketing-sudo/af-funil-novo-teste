@@ -254,8 +254,6 @@ export async function submitLeadToCloud(
     page_url: getPageURL(),
   };
 
-  if (import.meta.env.DEV) console.log('[Lead] Submitting to edge function:', JSON.stringify(payload, null, 2));
-
   const { data, error } = await supabase.functions.invoke('submit-lead', {
     body: payload,
   });
@@ -265,8 +263,7 @@ export async function submitLeadToCloud(
     return { success: false, error: error.message };
   }
 
-  if (import.meta.env.DEV) console.log('[Lead] Edge function response:', data);
-  return { 
+  return {
     success: data?.success || false, 
     lead_id: data?.lead_id,
     webhook_sent: data?.webhook_sent,

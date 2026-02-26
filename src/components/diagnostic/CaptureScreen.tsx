@@ -181,11 +181,6 @@ export function CaptureScreen({ selectedPath, results, responses, brandFiles, se
         const firstName = nameParts[0] || '';
         const lastName = nameParts.slice(1).join(' ') || '';
         
-        if (import.meta.env.DEV) {
-          console.log('[CaptureScreen] Using pre-captured cookies - fbp:', fbp ? 'present' : 'absent', 'fbc:', fbc ? 'present' : 'absent');
-          console.log('[CaptureScreen] EMQ params - firstName:', firstName, 'lastName:', lastName ? 'present' : 'absent', 'country: br');
-        }
-
         await trackLeadServer({
           eventId,
           email: email || undefined,
