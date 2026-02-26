@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { LogoHeader } from './LogoHeader';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import { phaseNames } from '@/data/questions';
 import { getFilteredProducts, fetchProductsFromDB, Product } from '@/data/products';
 import { Check } from 'lucide-react';
@@ -41,7 +42,7 @@ export function ProductSelectionScreen({ responses, onConfirm, onClickSFX }: Pro
     window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
   }, []);
 
-  const { data: dbProducts } = useQuery({
+  const { data: dbProducts, isLoading } = useQuery({
     queryKey: ['products-funnel'],
     queryFn: fetchProductsFromDB,
     staleTime: 5 * 60 * 1000,
@@ -56,10 +57,11 @@ export function ProductSelectionScreen({ responses, onConfirm, onClickSFX }: Pro
   }, [responses]);
 
   const filteredProducts = useMemo(() => {
+    if (isLoading || !dbProducts) return [];
     const categoriesRaw = responses[8] || '';
     const cats = categoriesRaw ? categoriesRaw.split(',') : [];
     return getFilteredProducts(cats, dbProducts);
-  }, [responses, dbProducts]);
+  }, [responses, dbProducts, isLoading]);
 
   // Triple the products for infinite scroll
   const tripled = useMemo(() => {
@@ -74,6 +76,7 @@ export function ProductSelectionScreen({ responses, onConfirm, onClickSFX }: Pro
     const container = scrollRef.current;
     if (!container || filteredProducts.length === 0) return;
 
+    mounted.current = false;
     requestAnimationFrame(() => {
       singleBlockWidth.current = container.scrollWidth / 3;
       container.scrollLeft = singleBlockWidth.current;
@@ -165,23 +168,39 @@ export function ProductSelectionScreen({ responses, onConfirm, onClickSFX }: Pro
 
       {/* Carousel with infinite scroll */}
       <div className="relative mt-6 sm:mt-8">
-        <div
-          ref={scrollRef}
-          onScroll={handleScroll}
-          className="product-carousel overflow-x-auto pb-4 scrollbar-hide"
-        >
-          <div className="flex gap-3 sm:gap-4 items-start animate-fade-in">
-            {tripled.map((product, index) => (
-              <ProductCard
-                key={`${product.id}-${index}`}
-                product={product}
-                isSelected={selected.has(product.id)}
-                onToggle={() => toggle(product.id)}
-                selectedColors={selectedColors}
-              />
+        {isLoading ? (
+          <div className="flex gap-3 sm:gap-4 overflow-hidden pb-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex-shrink-0 w-[220px] sm:w-[260px] rounded-2xl overflow-hidden ring-1 ring-border">
+                <Skeleton className="w-full aspect-square" />
+                <div className="p-3 space-y-2">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-5 w-1/2" />
+                  <Skeleton className="h-3 w-2/3" />
+                </div>
+              </div>
             ))}
           </div>
-        </div>
+        ) : (
+          <div
+            key={filteredProducts.length}
+            ref={scrollRef}
+            onScroll={handleScroll}
+            className="product-carousel overflow-x-auto pb-4 scrollbar-hide"
+          >
+            <div className="flex gap-3 sm:gap-4 items-start animate-fade-in">
+              {tripled.map((product, index) => (
+                <ProductCard
+                  key={`${product.id}-${index}`}
+                  product={product}
+                  isSelected={selected.has(product.id)}
+                  onToggle={() => toggle(product.id)}
+                  selectedColors={selectedColors}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Confirm button */}
