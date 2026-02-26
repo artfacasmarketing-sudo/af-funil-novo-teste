@@ -237,7 +237,7 @@ export function CaptureScreen({ selectedPath, results, responses, brandFiles, se
 
           <div className="pt-4">
             <a 
-              href="https://wa.me/5562999993577"
+              href="https://api.whatsapp.com/send?phone=5562999993577"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-primary hover:underline text-sm"
