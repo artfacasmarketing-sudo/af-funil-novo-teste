@@ -51,7 +51,7 @@ export function CaptureScreen({ selectedPath, results, responses, brandFiles, se
   const [calendarOpen, setCalendarOpen] = useState(false);
   
   const { trackLead } = useMetaPixel();
-  const { fbp, fbc, clientIp } = useMetaCookies();
+  const { fbp, fbc } = useMetaCookies();
 
   // Trigger celebration when success
   useEffect(() => {
@@ -182,10 +182,10 @@ export function CaptureScreen({ selectedPath, results, responses, brandFiles, se
         const lastName = nameParts.slice(1).join(' ') || '';
         
         if (import.meta.env.DEV) {
-          console.log('[CaptureScreen] Using pre-captured cookies - fbp:', fbp ? 'present' : 'absent', 'fbc:', fbc ? 'present' : 'absent', 'clientIp:', clientIp ? 'present' : 'absent');
+          console.log('[CaptureScreen] Using pre-captured cookies - fbp:', fbp ? 'present' : 'absent', 'fbc:', fbc ? 'present' : 'absent');
           console.log('[CaptureScreen] EMQ params - firstName:', firstName, 'lastName:', lastName ? 'present' : 'absent', 'country: br');
         }
-        
+
         await trackLeadServer({
           eventId,
           email: email || undefined,
@@ -195,7 +195,6 @@ export function CaptureScreen({ selectedPath, results, responses, brandFiles, se
           eventSourceUrl: window.location.href,
           fbp,
           fbc,
-          clientIp,
           firstName,
           lastName: lastName || undefined,
           country: 'br',
