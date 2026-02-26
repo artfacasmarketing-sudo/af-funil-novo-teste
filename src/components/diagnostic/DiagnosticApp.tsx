@@ -1,5 +1,7 @@
 import { useState, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useAudio } from '@/hooks/useAudio';
+import { fetchProductsFromDB } from '@/data/products';
 import { questions } from '@/data/questions';
 import { calculateResults, DiagnosticResults } from '@/lib/resultsCalculator';
 import { IntroScreen } from './IntroScreen';
@@ -12,6 +14,13 @@ import { CaptureScreen } from './CaptureScreen';
 type Step = 'intro' | 'funnel' | 'products' | 'processing' | 'results' | 'capture';
 
 export function DiagnosticApp() {
+  // Prefetch products early so they're cached when ProductSelectionScreen mounts
+  useQuery({
+    queryKey: ['products-funnel'],
+    queryFn: fetchProductsFromDB,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const [step, setStep] = useState<Step>('intro');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [responses, setResponses] = useState<Record<string, any>>({});
