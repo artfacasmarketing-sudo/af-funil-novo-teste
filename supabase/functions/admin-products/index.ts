@@ -46,6 +46,19 @@ const requestSchema = z.object({
   data: z.any().optional(),
 });
 
+// Constant-time string comparison to prevent timing attacks
+function timingSafeEqual(a: string, b: string): boolean {
+  const encoder = new TextEncoder();
+  const aBytes = encoder.encode(a);
+  const bBytes = encoder.encode(b);
+  if (aBytes.length !== bBytes.length) return false;
+  let diff = 0;
+  for (let i = 0; i < aBytes.length; i++) {
+    diff |= aBytes[i] ^ bBytes[i];
+  }
+  return diff === 0;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -80,9 +93,9 @@ Deno.serve(async (req) => {
 
     const { action, password, data } = reqParsed.data;
 
-    // Validate password
+    // Validate password with constant-time comparison (prevents timing attacks)
     const adminPassword = Deno.env.get("ADMIN_PASSWORD");
-    if (!adminPassword || password !== adminPassword) {
+    if (!adminPassword || !timingSafeEqual(password, adminPassword)) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
