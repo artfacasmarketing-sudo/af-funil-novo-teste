@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { LogoHeader } from './LogoHeader';
 import { Progress } from '@/components/ui/progress';
-import { Skeleton } from '@/components/ui/skeleton';
+
 import { phaseNames } from '@/data/questions';
 import { getFilteredProducts, fetchProductsFromDB, Product } from '@/data/products';
 import { Check } from 'lucide-react';
@@ -169,17 +169,11 @@ export function ProductSelectionScreen({ responses, onConfirm, onClickSFX }: Pro
       {/* Carousel with infinite scroll */}
       <div className="relative mt-6 sm:mt-8">
         {isLoading ? (
-          <div className="flex gap-3 sm:gap-4 overflow-hidden pb-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="flex-shrink-0 w-[220px] sm:w-[260px] rounded-2xl overflow-hidden ring-1 ring-border">
-                <Skeleton className="w-full aspect-square" />
-                <div className="p-3 space-y-2">
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-5 w-1/2" />
-                  <Skeleton className="h-3 w-2/3" />
-                </div>
-              </div>
-            ))}
+          <div className="flex flex-col items-center justify-center py-16 sm:py-20 animate-fade-in">
+            <div className="w-12 h-12 border-3 border-primary/20 border-t-primary rounded-full animate-spin-slow mb-6" />
+            <p className="text-muted-foreground text-sm sm:text-base font-medium">
+              Encontrando as melhores opções para você...
+            </p>
           </div>
         ) : (
           <div
