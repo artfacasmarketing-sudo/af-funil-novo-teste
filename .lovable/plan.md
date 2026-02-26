@@ -1,23 +1,27 @@
 
 
-## Plano: Melhorar compatibilidade do link WhatsApp
+## Plano: Corrigir bugs de carregamento na vitrine de produtos
 
-### Diagnostico
-- O link `https://wa.me/5562999993577` esta **correto e funcionando** (testei e confirma o numero +55 62 99999-3577)
-- O "link quebrado" provavelmente ocorre no **preview do Lovable** (iframe bloqueia `target="_blank"`)
-- No site publicado (`diaganostico-premium-artfacas.lovable.app`) deve funcionar normalmente
+### Problemas identificados
 
-### Correção proposta
-Trocar o formato do link de `wa.me` para `api.whatsapp.com/send` que tem melhor compatibilidade em diferentes dispositivos e contextos:
+1. **Produtos "atrasados"**: A vitrine usa `useQuery` para buscar produtos do banco, mas enquanto carrega, usa o array estático local (desatualizado). Quando os dados do banco chegam, a lista muda abruptamente causando flash visual.
 
-**Arquivo:** `src/components/diagnostic/CaptureScreen.tsx` (linha 240)
+2. **Scroll infinito quebra na troca de dados**: Quando `dbProducts` chega do banco e substitui os dados estáticos, `singleBlockWidth` e a posição do scroll ficam dessincronizados, causando comportamento errático no carrossel.
 
-- **De:** `href="https://wa.me/5562999993577"`
-- **Para:** `href="https://api.whatsapp.com/send?phone=5562999993577"`
+3. **Sem estado de loading**: Nenhum skeleton/spinner enquanto os produtos estão sendo buscados do banco.
+
+### Correções
+
+**Arquivo:** `src/components/diagnostic/ProductSelectionScreen.tsx`
+
+1. Adicionar estado de loading com skeletons enquanto produtos carregam do banco
+2. Só renderizar o carrossel depois que `dbProducts` estiver pronto (evita dupla renderização)
+3. Resetar `singleBlockWidth` e `mounted` quando `filteredProducts` muda, garantindo re-inicialização correta do scroll infinito
 
 ### Detalhes tecnicos
-- O formato `api.whatsapp.com/send` e o link oficial da API do WhatsApp Business
-- Funciona melhor em navegadores mobile, desktop e dentro de webviews/iframes
-- Aceita parametro `text=` para mensagem pre-definida (pode adicionar depois se quiser)
-- Nenhum outro arquivo precisa ser alterado
+
+- Usar `isLoading` do `useQuery` para mostrar skeleton cards no lugar do carrossel vazio
+- Condicionar a renderização do carrossel a `!isLoading` para evitar que o scroll infinito se inicialize com dados temporários e depois quebre ao receber os dados finais
+- Adicionar `key={filteredProducts.length}` no container do scroll para forçar re-mount quando a lista de produtos muda
+- Resetar `mounted.current = false` no useEffect de inicialização do scroll
 
