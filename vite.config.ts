@@ -12,7 +12,6 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
     headers: {
-      "X-Frame-Options": "DENY",
       "X-Content-Type-Options": "nosniff",
       "Referrer-Policy": "strict-origin-when-cross-origin",
       "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
@@ -24,7 +23,6 @@ export default defineConfig(({ mode }) => ({
         "img-src 'self' data: https:",
         "style-src 'self' 'unsafe-inline'",
         "font-src 'self' data:",
-        "frame-ancestors 'none'",
       ].join("; "),
     },
   },
