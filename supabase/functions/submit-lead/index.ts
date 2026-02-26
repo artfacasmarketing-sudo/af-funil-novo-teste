@@ -81,6 +81,15 @@ const leadSchema = z.object({
   utm: utmSchema,
   referrer: z.string().max(500).optional().nullable(),
   page_url: z.string().max(500).optional().nullable(),
+}).superRefine((data, ctx) => {
+  if (!data.document_number) return
+  const digits = data.document_number.replace(/\D/g, '')
+  if (data.document_type === 'cpf' && digits.length !== 11) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'CPF deve ter 11 dígitos', path: ['document_number'] })
+  }
+  if (data.document_type === 'cnpj' && digits.length !== 14) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'CNPJ deve ter 14 dígitos', path: ['document_number'] })
+  }
 })
 
 Deno.serve(async (req) => {
