@@ -215,8 +215,10 @@ Deno.serve(async (req) => {
     // Send to n8n webhook
     let webhookSent = false
     const webhookUrl = N8N_WEBHOOK
-    
-    if (webhookUrl) {
+
+    if (webhookUrl && !webhookUrl.startsWith('https://')) {
+      console.error('[submit-lead] Webhook URL rejeitada: deve começar com https://')
+    } else if (webhookUrl) {
       try {
         const webhookPayload = {
           ...payload,
