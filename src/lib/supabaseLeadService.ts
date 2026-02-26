@@ -82,30 +82,37 @@ const colorLabels: Record<string, string> = {
 
 // File upload constraints
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const ALLOWED_FILE_TYPES = [
+const ALLOWED_MIME_TYPES = [
   'image/png',
   'image/jpeg',
-  'image/jpg',
-  'image/svg+xml',
   'image/webp',
   'application/pdf',
 ];
+const ALLOWED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'pdf'];
 
 /**
- * Validate a file before upload
+ * Validate a file before upload (MIME type + extension must both match)
  */
 function validateFile(file: File): { valid: boolean; error?: string } {
   if (file.size > MAX_FILE_SIZE) {
     return { valid: false, error: `Arquivo "${file.name}" excede o limite de 5MB` };
   }
-  
-  if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-    return { 
-      valid: false, 
-      error: `Tipo de arquivo não permitido: ${file.type}. Use PNG, JPG, SVG, WebP ou PDF.` 
+
+  if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+    return {
+      valid: false,
+      error: `Tipo de arquivo não permitido: ${file.type}. Use PNG, JPG, WebP ou PDF.`,
     };
   }
-  
+
+  const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+  if (!ALLOWED_EXTENSIONS.includes(ext)) {
+    return {
+      valid: false,
+      error: `Extensão não permitida: .${ext}. Use PNG, JPG, WebP ou PDF.`,
+    };
+  }
+
   return { valid: true };
 }
 
