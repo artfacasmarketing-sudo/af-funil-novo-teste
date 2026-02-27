@@ -111,8 +111,8 @@ export function CaptureScreen({ selectedPath, results, responses, brandFiles, se
       return;
     }
 
-    if (documentType === 'cnpj' && !documentNumber.trim()) {
-      alert('Por favor, preencha seu CNPJ.');
+    if (!documentNumber.trim()) {
+      alert('Por favor, preencha seu CPF ou CNPJ.');
       return;
     }
 
@@ -351,7 +351,7 @@ export function CaptureScreen({ selectedPath, results, responses, brandFiles, se
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => { setDocumentType('cpf'); setHasStateRegistration(null); setDocumentNumber(''); }}
+                onClick={() => { setDocumentType('cpf'); setHasStateRegistration(null); }}
                 className={`flex-1 py-3 rounded-xl text-sm font-medium transition-colors ${
                   documentType === 'cpf'
                     ? 'bg-primary text-primary-foreground'
@@ -374,16 +374,14 @@ export function CaptureScreen({ selectedPath, results, responses, brandFiles, se
                 CNPJ
               </button>
             </div>
-            {documentType === 'cnpj' && (
-              <Input
-                id="cap-document"
-                value={documentNumber}
-                onChange={(e) => setDocumentNumber(e.target.value)}
-                placeholder="CNPJ *"
-                className="bg-secondary border-border py-6 sm:py-7 text-base"
-                disabled={submitState === 'loading'}
-              />
-            )}
+            <Input
+              id="cap-document"
+              value={documentNumber}
+              onChange={(e) => setDocumentNumber(e.target.value)}
+              placeholder={documentType === 'cpf' ? 'CPF *' : 'CNPJ *'}
+              className="bg-secondary border-border py-6 sm:py-7 text-base"
+              disabled={submitState === 'loading'}
+            />
             {documentType === 'cnpj' && (
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">Possui Inscrição Estadual? *</p>
