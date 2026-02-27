@@ -138,6 +138,7 @@ export const questions: Question[] = [
     subtitle: 'Selecione uma ou mais categorias ou peça sugestões.',
     options: [
       { id: 'kits', label: 'Kits / Kits Corporativos' },
+      { id: 'mais-vendidos', label: 'Mais Vendidos' },
       { id: 'garrafas', label: 'Garrafas / Squeezes' },
       { id: 'cadernos', label: 'Cadernos' },
       { id: 'facas', label: 'Facas / Canivetes' },

@@ -551,6 +551,7 @@ export const products: Product[] = [
  */
 const categoryMapping: Record<string, string[]> = {
   kits: ['kits'],
+  'mais-vendidos': ['mais-vendidos'],
   garrafas: ['garrafas'],
   cadernos: ['cadernos'],
   facas: ['facas', 'canivetes'],
