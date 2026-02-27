@@ -1,22 +1,18 @@
 
 
-## Plano: Remover loader e ir direto aos produtos com transição suave
+## Plano: Tornar documento obrigatório (CPF ou CNPJ)
 
-### Abordagem
+### Mudanças em `src/components/diagnostic/CaptureScreen.tsx`
 
-Remover o loader e o delay mínimo. Em vez disso, fazer **prefetch dos produtos desde o início do diagnóstico** (no `DiagnosticApp`) para que quando o usuário chegar na vitrine, os dados já estejam prontos. O carrossel renderiza direto com `animate-fade-in` para uma entrada suave.
+1. **Mostrar input de documento para ambos os tipos** — Atualmente o campo de número só aparece quando `documentType === 'cnpj'`. Mudar para sempre exibir o input, com placeholder dinâmico ("CPF *" ou "CNPJ *").
 
-### Mudanças
+2. **Validação no submit** — A validação na linha 114 hoje só verifica documento quando é CNPJ. Mudar para sempre exigir `documentNumber` preenchido, independente do tipo selecionado.
 
-**1. `src/components/diagnostic/DiagnosticApp.tsx`**
-- Adicionar `useQuery` com `prefetchQuery` ou simplesmente um `useQuery` para `['products-funnel']` no componente raiz, disparando o fetch logo no mount. Assim os produtos já estarão em cache quando o `ProductSelectionScreen` montar.
+3. **Manter tudo mais igual** — Inscrição Estadual continua aparecendo apenas para CNPJ. Nenhuma outra alteração.
 
-**2. `src/components/diagnostic/ProductSelectionScreen.tsx`**
-- Remover estado `minDelayPassed` e o `useEffect` do timer
-- Remover a condicional `(isLoading || !minDelayPassed)` e o bloco do loader
-- Renderizar o carrossel direto (os dados já estarão em cache pelo prefetch)
-- Manter um fallback mínimo para o caso raro de loading: mostrar apenas o carrossel vazio com o mesmo espaço (sem spinner, sem texto), para não quebrar o layout
+### Detalhes técnicos
 
-### Resultado
-O usuário vai direto do último question para a vitrine de produtos sem nenhum loader intermediário. Os produtos já estarão carregados em cache.
+- Linha 114: trocar `if (documentType === 'cnpj' && !documentNumber.trim())` para `if (!documentNumber.trim())` com mensagem genérica "Por favor, preencha seu CPF ou CNPJ."
+- Linha 377: remover a condição `documentType === 'cnpj'` do bloco do Input de documento, para que ele sempre apareça. Placeholder muda entre `"CPF *"` e `"CNPJ *"` conforme `documentType`.
+- Linha 354: ao trocar para CPF, não limpar mais o `documentNumber` (remover `setDocumentNumber('')` do onClick do botão CPF).
 
