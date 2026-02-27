@@ -1,18 +1,17 @@
 
 
-## Plano: Tornar documento obrigatório (CPF ou CNPJ)
+## Plano: Adicionar categoria "Mais Vendidos"
 
-### Mudanças em `src/components/diagnostic/CaptureScreen.tsx`
+### Mudanças
 
-1. **Mostrar input de documento para ambos os tipos** — Atualmente o campo de número só aparece quando `documentType === 'cnpj'`. Mudar para sempre exibir o input, com placeholder dinâmico ("CPF *" ou "CNPJ *").
+**1. `src/data/questions.ts`** (Questão 8)
+- Inserir `{ id: 'mais-vendidos', label: 'Mais Vendidos' }` como segunda opção (após "Kits / Kits Corporativos"), sem mexer nas demais.
 
-2. **Validação no submit** — A validação na linha 114 hoje só verifica documento quando é CNPJ. Mudar para sempre exigir `documentNumber` preenchido, independente do tipo selecionado.
+**2. `src/data/products.ts`** (categoryMapping)
+- Adicionar `'mais-vendidos': ['mais-vendidos']` no mapeamento de categorias.
 
-3. **Manter tudo mais igual** — Inscrição Estadual continua aparecendo apenas para CNPJ. Nenhuma outra alteração.
+**3. `src/lib/adminApi.ts`** (CATEGORY_OPTIONS)
+- Inserir `{ id: "mais-vendidos", label: "Mais Vendidos" }` como segunda opção no array, para que apareça no admin e seja possível tagear produtos como "mais vendidos".
 
-### Detalhes técnicos
-
-- Linha 114: trocar `if (documentType === 'cnpj' && !documentNumber.trim())` para `if (!documentNumber.trim())` com mensagem genérica "Por favor, preencha seu CPF ou CNPJ."
-- Linha 377: remover a condição `documentType === 'cnpj'` do bloco do Input de documento, para que ele sempre apareça. Placeholder muda entre `"CPF *"` e `"CNPJ *"` conforme `documentType`.
-- Linha 354: ao trocar para CPF, não limpar mais o `documentNumber` (remover `setDocumentNumber('')` do onClick do botão CPF).
+Nenhuma alteração de banco necessária — a coluna `categories` já é um array de texto livre, então basta adicionar `"mais-vendidos"` aos produtos desejados via o painel admin.
 
