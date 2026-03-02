@@ -1,19 +1,18 @@
 
 
-## Plano: Fixar 3 produtos prioritários no topo da vitrine
+## Plano: Adicionar categoria "Kit Facas" e garantir Kit Artfacas no fallback
 
-### Mudança única em `src/data/products.ts` — função `getFilteredProducts`
+### 1. `src/data/questions.ts` (Questão 8)
+- Inserir `{ id: 'kit-facas', label: 'Kit Facas' }` como terceira opção (após "Mais Vendidos", antes de "Garrafas / Squeezes").
 
-Após filtrar os produtos por categorias, reordenar o resultado para que estes 3 produtos (identificados por SKU) apareçam sempre primeiro, nesta ordem:
+### 2. `src/data/products.ts` (categoryMapping)
+- Adicionar `'kit-facas': ['kit-facas']` no mapeamento.
 
-1. **Colete Puffer** (`colete-puffer`)
-2. **Kit Artfacas 7pcs** (`kit-artfacas-7pcs`)
-3. **Kit Corporativo** (`kits-corporativos`)
+### 3. `src/lib/adminApi.ts` (CATEGORY_OPTIONS)
+- Inserir `{ id: "kit-facas", label: "Kit Facas" }` como terceira opção no array, para tagear produtos no admin.
 
-Lógica:
-- Buscar esses 3 produtos no array `source` completo (não apenas nos filtrados), para garantir que apareçam mesmo que o lead não tenha selecionado a categoria correspondente.
-- Remover duplicatas do array filtrado.
-- Retornar: `[...pinned encontrados, ...filtrados sem duplicatas]`.
+### 4. Produto "Kit Artfacas 7pcs" no fallback estático
+- Adicionar o produto Kit Artfacas 7pcs na lista estática `products` em `src/data/products.ts`, para que o pinning funcione mesmo quando o DB não retorna dados. Vou buscar os dados completos do banco para criar a entrada correta.
 
-Nenhuma outra alteração em nenhum outro arquivo.
+Nenhuma alteração de banco necessária.
 
