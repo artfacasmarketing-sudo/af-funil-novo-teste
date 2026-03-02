@@ -1,17 +1,19 @@
 
 
-## Plano: Adicionar categoria "Mais Vendidos"
+## Plano: Fixar 3 produtos prioritários no topo da vitrine
 
-### Mudanças
+### Mudança única em `src/data/products.ts` — função `getFilteredProducts`
 
-**1. `src/data/questions.ts`** (Questão 8)
-- Inserir `{ id: 'mais-vendidos', label: 'Mais Vendidos' }` como segunda opção (após "Kits / Kits Corporativos"), sem mexer nas demais.
+Após filtrar os produtos por categorias, reordenar o resultado para que estes 3 produtos (identificados por SKU) apareçam sempre primeiro, nesta ordem:
 
-**2. `src/data/products.ts`** (categoryMapping)
-- Adicionar `'mais-vendidos': ['mais-vendidos']` no mapeamento de categorias.
+1. **Colete Puffer** (`colete-puffer`)
+2. **Kit Artfacas 7pcs** (`kit-artfacas-7pcs`)
+3. **Kit Corporativo** (`kits-corporativos`)
 
-**3. `src/lib/adminApi.ts`** (CATEGORY_OPTIONS)
-- Inserir `{ id: "mais-vendidos", label: "Mais Vendidos" }` como segunda opção no array, para que apareça no admin e seja possível tagear produtos como "mais vendidos".
+Lógica:
+- Buscar esses 3 produtos no array `source` completo (não apenas nos filtrados), para garantir que apareçam mesmo que o lead não tenha selecionado a categoria correspondente.
+- Remover duplicatas do array filtrado.
+- Retornar: `[...pinned encontrados, ...filtrados sem duplicatas]`.
 
-Nenhuma alteração de banco necessária — a coluna `categories` já é um array de texto livre, então basta adicionar `"mais-vendidos"` aos produtos desejados via o painel admin.
+Nenhuma outra alteração em nenhum outro arquivo.
 
