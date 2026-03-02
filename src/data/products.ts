@@ -566,10 +566,22 @@ const categoryMapping: Record<string, string[]> = {
 /**
  * Filter products based on funnel category selections (question 8)
  */
+// SKUs dos produtos que devem aparecer sempre no topo, nesta ordem
+const PINNED_SKUS = ['colete-puffer', 'kit-artfacas-7pcs', 'kits-corporativos'];
+
 export function getFilteredProducts(selectedCategories: string[], productList?: Product[]): Product[] {
   const source = productList || products;
+
+  // Buscar produtos pinados no array completo (independente de categoria)
+  const pinned = PINNED_SKUS
+    .map(sku => source.find(p => p.sku === sku))
+    .filter((p): p is Product => !!p);
+
+  const pinnedIds = new Set(pinned.map(p => p.id));
+
   if (selectedCategories.includes('sugestao') || selectedCategories.length === 0) {
-    return source;
+    const rest = source.filter(p => !pinnedIds.has(p.id));
+    return [...pinned, ...rest];
   }
 
   // Collect all matching product categories
@@ -579,9 +591,11 @@ export function getFilteredProducts(selectedCategories: string[], productList?: 
     mapped.forEach(c => productCategories.add(c));
   }
 
-  return source.filter(product =>
-    product.categories.some(c => productCategories.has(c))
+  const filtered = source.filter(p =>
+    !pinnedIds.has(p.id) && p.categories.some(c => productCategories.has(c))
   );
+
+  return [...pinned, ...filtered];
 }
 
 /**
