@@ -198,11 +198,12 @@ export function ProductSelectionScreen({ responses, onConfirm, onClickSFX }: Pro
           <Button
             onClick={handleConfirm}
             size="lg"
+            disabled={selected.size === 0}
             className="w-full rounded-2xl py-6 sm:py-7 font-semibold text-base glow-hover"
           >
             {selected.size > 0
               ? `Confirmar ${selected.size} produto${selected.size > 1 ? 's' : ''}`
-              : 'Pular e continuar'}
+              : 'Selecione ao menos 1 produto'}
           </Button>
 
           {/* Footer signature */}
