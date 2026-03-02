@@ -200,25 +200,17 @@ Deno.serve(async (req) => {
 
     console.log('[submit-lead] Lead saved with ID:', lead.id)
 
-    // Generate signed URLs for uploaded files (valid for 7 days)
-    let signedFileUrls: string[] = []
-    if (payload.file_urls && payload.file_urls.length > 0) {
-      signedFileUrls = await Promise.all(
-        payload.file_urls.map(async (url: string) => {
-          // Extract path from public URL
-          const pathMatch = url.match(/brand-files\/(.+)$/)
-          if (pathMatch && pathMatch[1]) {
-            const { data, error } = await supabase.storage
-              .from('brand-files')
-              .createSignedUrl(pathMatch[1], 60 * 60 * 24 * 7) // 7 days
-            if (!error && data?.signedUrl) {
-              console.log('[submit-lead] Generated signed URL for:', pathMatch[1])
-              return data.signedUrl
-            }
-          }
-          return url // fallback to original URL
-        })
-      )
+    // Build permanent public URLs for uploaded files
+    let publicFileUrls: string[] = payload.file_urls || []
+    if (publicFileUrls.length > 0) {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+      publicFileUrls = publicFileUrls.map((url: string) => {
+        const pathMatch = url.match(/brand-files\/(.+)$/)
+        if (pathMatch?.[1]) {
+          return `${supabaseUrl}/storage/v1/object/public/brand-files/${pathMatch[1]}`
+        }
+        return url
+      })
     }
 
     // Send to n8n webhook
@@ -231,7 +223,7 @@ Deno.serve(async (req) => {
       try {
         const webhookPayload = {
           ...payload,
-          file_urls: signedFileUrls.length > 0 ? signedFileUrls : payload.file_urls, // Use signed URLs
+          file_urls: publicFileUrls,
           lead_id: lead.id,
           timestamp: lead.created_at,
           source: 'lovable-cloud',
