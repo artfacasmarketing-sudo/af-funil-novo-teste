@@ -544,6 +544,17 @@ export const products: Product[] = [
     price_max: 158.40,
     categories: ['mochilas'],
   },
+
+  // Kit Facas
+  {
+    id: '65281c53-b8f9-4556-8026-fc24183d8cea',
+    name: 'Kit Artfacas 7pcs',
+    sku: 'kit-artfacas-7pcs',
+    image: 'https://immqshucxpiidmfvcpja.supabase.co/storage/v1/object/public/product-images/a664c9c0-6690-4748-9c75-7be21e071cf4.jpeg',
+    price_min: 650,
+    price_max: 900,
+    categories: ['kits', 'facas', 'canivetes', 'camping', 'mais-vendidos', 'kit-facas'],
+  },
 ];
 
 /**
@@ -560,6 +571,7 @@ const categoryMapping: Record<string, string[]> = {
   mochilas: ['mochilas'],
   camping: ['camping'],
   churrasco: ['kits', 'facas'],
+  'kit-facas': ['kit-facas'],
   sugestao: [], // empty = show all
 };
 
