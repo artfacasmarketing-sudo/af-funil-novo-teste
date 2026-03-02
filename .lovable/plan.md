@@ -1,18 +1,24 @@
 
 
-## Plano: Adicionar categoria "Kit Facas" e garantir Kit Artfacas no fallback
+## Plano: Adicionar quantidade e nota "preço por unidade" no card de produto
 
-### 1. `src/data/questions.ts` (Questão 8)
-- Inserir `{ id: 'kit-facas', label: 'Kit Facas' }` como terceira opção (após "Mais Vendidos", antes de "Garrafas / Squeezes").
+### Mudança única em `src/components/diagnostic/ProductSelectionScreen.tsx` — bloco de info do `ProductCard` (linhas 271-281)
 
-### 2. `src/data/products.ts` (categoryMapping)
-- Adicionar `'kit-facas': ['kit-facas']` no mapeamento.
+Adicionar duas informações discretas sem alterar o layout existente:
 
-### 3. `src/lib/adminApi.ts` (CATEGORY_OPTIONS)
-- Inserir `{ id: "kit-facas", label: "Kit Facas" }` como terceira opção no array, para tagear produtos no admin.
+1. **Acima do preço**: linha com `Qtd: 10 – 1.000+`
+2. **Abaixo do preço**: linha com `preço por unidade`
 
-### 4. Produto "Kit Artfacas 7pcs" no fallback estático
-- Adicionar o produto Kit Artfacas 7pcs na lista estática `products` em `src/data/products.ts`, para que o pinning funcione mesmo quando o DB não retorna dados. Vou buscar os dados completos do banco para criar a entrada correta.
+Ajustar altura do container de `h-[6.5rem]` para `h-[8rem]` para acomodar as duas linhas extras.
 
-Nenhuma alteração de banco necessária.
+Resultado:
+```
+Nome do Produto
+Qtd: 10 – 1.000+        ← novo, text-[9px] muted
+R$ 100,00 – R$ 200,00
+preço por unidade        ← novo, text-[9px] muted
+SKU: xxx
+```
+
+Ambas as linhas usam `text-[9px] text-muted-foreground mono-font` para manter discrição.
 
