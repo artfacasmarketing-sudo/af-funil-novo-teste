@@ -281,9 +281,6 @@ function ProductCard({
         <span className="text-[9px] text-muted-foreground mono-font">
           preço por unidade
         </span>
-        <span className="text-[10px] text-muted-foreground mono-font uppercase block truncate line-clamp-1">
-          SKU: {product.sku}
-        </span>
       </div>
     </button>
   );
