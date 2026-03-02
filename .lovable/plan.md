@@ -1,24 +1,39 @@
 
 
-## Plano: Adicionar quantidade e nota "preço por unidade" no card de produto
+## Problema
 
-### Mudança única em `src/components/diagnostic/ProductSelectionScreen.tsx` — bloco de info do `ProductCard` (linhas 271-281)
+A edge function `submit-lead` (linhas 204-230) gera **signed URLs** com expiração de 7 dias para enviar ao webhook/CRM. Como o bucket `brand-files` agora é **público**, basta enviar as URLs públicas permanentes — sem necessidade de `createSignedUrl`.
 
-Adicionar duas informações discretas sem alterar o layout existente:
+## Plano
 
-1. **Acima do preço**: linha com `Qtd: 10 – 1.000+`
-2. **Abaixo do preço**: linha com `preço por unidade`
+### Arquivo: `supabase/functions/submit-lead/index.ts`
 
-Ajustar altura do container de `h-[6.5rem]` para `h-[8rem]` para acomodar as duas linhas extras.
+**Remover** todo o bloco de geração de signed URLs (linhas ~202-220) e substituir por uma simples construção de URLs públicas permanentes:
 
-Resultado:
+```typescript
+// Antes: createSignedUrl com expiração de 7 dias
+// Depois: URLs públicas permanentes usando o SUPABASE_URL
+
+let publicFileUrls: string[] = payload.file_urls || [];
+if (publicFileUrls.length > 0) {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  publicFileUrls = publicFileUrls.map((url: string) => {
+    const pathMatch = url.match(/brand-files\/(.+)$/);
+    if (pathMatch?.[1]) {
+      return `${supabaseUrl}/storage/v1/object/public/brand-files/${pathMatch[1]}`;
+    }
+    return url;
+  });
+}
 ```
-Nome do Produto
-Qtd: 10 – 1.000+        ← novo, text-[9px] muted
-R$ 100,00 – R$ 200,00
-preço por unidade        ← novo, text-[9px] muted
-SKU: xxx
+
+No webhook payload (linha ~235), usar `publicFileUrls` em vez de `signedFileUrls`:
+
+```typescript
+file_urls: publicFileUrls,
 ```
 
-Ambas as linhas usam `text-[9px] text-muted-foreground mono-font` para manter discrição.
+Remover a variável `signedFileUrls` e todo o `Promise.all` com `createSignedUrl`.
+
+**Resultado**: URLs permanentes no CRM, sem expiração.
 
