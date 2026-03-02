@@ -607,7 +607,11 @@ export function getFilteredProducts(selectedCategories: string[], productList?: 
     !pinnedIds.has(p.id) && p.categories.some(c => productCategories.has(c))
   );
 
-  return [...pinned, ...filtered];
+  // Remaining products not in pinned or filtered
+  const remainingIds = new Set([...pinnedIds, ...filtered.map(p => p.id)]);
+  const remaining = source.filter(p => !remainingIds.has(p.id));
+
+  return [...pinned, ...filtered, ...remaining];
 }
 
 /**
