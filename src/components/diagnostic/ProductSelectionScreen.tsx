@@ -273,7 +273,7 @@ function ProductCard({
           {product.name}
         </h3>
         <span className="text-[9px] text-muted-foreground mono-font">
-          Qtd: 10 – 1.000+
+          Qtd: 10 – 1000+
         </span>
         <p className="text-primary font-bold text-sm sm:text-base">
           {formatPrice(product.price_min, product.price_max)}
