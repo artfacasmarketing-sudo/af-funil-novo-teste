@@ -139,6 +139,7 @@ export const questions: Question[] = [
     options: [
       { id: 'kits', label: 'Kits / Kits Corporativos' },
       { id: 'mais-vendidos', label: 'Mais Vendidos' },
+      { id: 'kit-facas', label: 'Kit Facas' },
       { id: 'garrafas', label: 'Garrafas / Squeezes' },
       { id: 'cadernos', label: 'Cadernos' },
       { id: 'facas', label: 'Facas / Canivetes' },

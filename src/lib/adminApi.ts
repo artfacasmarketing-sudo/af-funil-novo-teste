@@ -38,6 +38,7 @@ export const adminApi = {
 export const CATEGORY_OPTIONS = [
   { id: "cadernos", label: "Cadernos" },
   { id: "mais-vendidos", label: "Mais Vendidos" },
+  { id: "kit-facas", label: "Kit Facas" },
   { id: "camping", label: "Camping" },
   { id: "canivetes", label: "Canivetes" },
   { id: "chapeus", label: "Chapéus" },
