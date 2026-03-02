@@ -268,13 +268,19 @@ function ProductCard({
       </div>
 
       {/* Info */}
-      <div className="p-3 h-[6.5rem] flex flex-col justify-between">
+      <div className="p-3 h-[8rem] flex flex-col justify-between">
         <h3 className="font-semibold text-xs sm:text-sm leading-tight line-clamp-2 h-[2.5rem]">
           {product.name}
         </h3>
+        <span className="text-[9px] text-muted-foreground mono-font">
+          Qtd: 10 – 1.000+
+        </span>
         <p className="text-primary font-bold text-sm sm:text-base">
           {formatPrice(product.price_min, product.price_max)}
         </p>
+        <span className="text-[9px] text-muted-foreground mono-font">
+          preço por unidade
+        </span>
         <span className="text-[10px] text-muted-foreground mono-font uppercase block truncate line-clamp-1">
           SKU: {product.sku}
         </span>
