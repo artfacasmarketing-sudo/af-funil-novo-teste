@@ -268,7 +268,7 @@ function ProductCard({
       </div>
 
       {/* Info */}
-      <div className="p-3 h-[8rem] flex flex-col justify-between">
+      <div className="p-3 flex flex-col gap-0.5">
         <h3 className="font-semibold text-xs sm:text-sm leading-tight line-clamp-2 h-[2.5rem]">
           {product.name}
         </h3>
