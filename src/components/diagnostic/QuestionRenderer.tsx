@@ -356,10 +356,16 @@ export function QuestionRenderer({ question, onAnswer, onClickSFX }: QuestionRen
 
         <Button
           onClick={handleFileUploadConfirm}
-          className="w-full rounded-2xl py-6 sm:py-7 font-semibold text-base glow-hover"
+          disabled={uploadedFiles.length === 0}
+          className={`w-full rounded-2xl py-6 sm:py-7 font-semibold text-base transition-all ${uploadedFiles.length === 0 ? 'opacity-50 cursor-not-allowed' : 'glow-hover'}`}
         >
           Confirmar Diagnóstico
         </Button>
+        {uploadedFiles.length === 0 && (
+          <p className="text-xs text-center text-muted-foreground">
+            Envie pelo menos um arquivo para continuar
+          </p>
+        )}
       </div>
     );
   }
