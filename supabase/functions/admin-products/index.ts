@@ -2,22 +2,19 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 function buildCorsHeaders(req: Request) {
-  const requestOrigin = req.headers.get("origin") ?? "*";
+  const requestOrigin = req.headers.get("origin");
   const allowedOriginRaw = Deno.env.get("ALLOWED_ORIGIN")?.trim();
 
   let allowOrigin = "*";
 
-  if (allowedOriginRaw && allowedOriginRaw !== "*") {
-    const allowedOrigins = allowedOriginRaw
-      .split(",")
-      .map((origin) => origin.trim())
-      .filter(Boolean);
-
-    allowOrigin = allowedOrigins.includes(requestOrigin)
-      ? requestOrigin
-      : (allowedOrigins[0] ?? "*");
-  } else if (requestOrigin !== "*") {
+  if (allowedOriginRaw === "*") {
+    allowOrigin = "*";
+  } else if (requestOrigin) {
+    // Reflect request origin so preview/published/custom domains can call the admin API.
     allowOrigin = requestOrigin;
+  } else if (allowedOriginRaw) {
+    // Fallback for non-browser clients without Origin header.
+    allowOrigin = allowedOriginRaw.split(",")[0]?.trim() || "*";
   }
 
   return {
