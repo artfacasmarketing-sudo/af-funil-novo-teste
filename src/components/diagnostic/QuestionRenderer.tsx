@@ -192,6 +192,11 @@ export function QuestionRenderer({ question, onAnswer, onClickSFX }: QuestionRen
   };
 
   const handleFileUploadConfirm = () => {
+    if (uploadedFiles.length === 0) {
+      toast.error('Envie pelo menos um arquivo da marca para continuar');
+      return;
+    }
+
     onClickSFX();
     const files = uploadedFiles.map(f => f.file);
     onAnswer(question.id, '', files);
