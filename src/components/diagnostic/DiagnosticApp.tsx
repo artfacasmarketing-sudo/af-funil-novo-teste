@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import { useAudio } from '@/hooks/useAudio';
 import { fetchProductsFromDB } from '@/data/products';
 import { questions } from '@/data/questions';
@@ -37,14 +36,6 @@ export function DiagnosticApp() {
   }, [startBGM]);
 
   const handleAnswer = useCallback((questionId: number, value: string, files?: File[]) => {
-    const currentQuestion = questions[currentQuestionIndex];
-    const isFileUploadQuestion = currentQuestion?.type === 'file-upload';
-
-    if (isFileUploadQuestion && (!files || files.length === 0)) {
-      toast.error('Envie pelo menos um arquivo da marca para continuar');
-      return;
-    }
-
     setResponses(prev => ({
       ...prev,
       [questionId]: value,
