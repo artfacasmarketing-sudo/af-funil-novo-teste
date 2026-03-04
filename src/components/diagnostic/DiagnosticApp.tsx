@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { useAudio } from '@/hooks/useAudio';
 import { fetchProductsFromDB } from '@/data/products';
 import { questions } from '@/data/questions';
