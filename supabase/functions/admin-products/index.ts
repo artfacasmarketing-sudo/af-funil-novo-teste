@@ -1,11 +1,33 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": Deno.env.get("ALLOWED_ORIGIN") ?? "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+function buildCorsHeaders(req: Request) {
+  const requestOrigin = req.headers.get("origin") ?? "*";
+  const allowedOriginRaw = Deno.env.get("ALLOWED_ORIGIN")?.trim();
+
+  let allowOrigin = "*";
+
+  if (allowedOriginRaw && allowedOriginRaw !== "*") {
+    const allowedOrigins = allowedOriginRaw
+      .split(",")
+      .map((origin) => origin.trim())
+      .filter(Boolean);
+
+    allowOrigin = allowedOrigins.includes(requestOrigin)
+      ? requestOrigin
+      : (allowedOrigins[0] ?? "*");
+  } else if (requestOrigin !== "*") {
+    allowOrigin = requestOrigin;
+  }
+
+  return {
+    "Access-Control-Allow-Origin": allowOrigin,
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Vary": "Origin",
+  };
+}
 
 // Simple in-memory rate limit
 const ipRequests = new Map<string, { count: number; reset: number }>();
