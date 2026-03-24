@@ -9,7 +9,7 @@ import {
 import { adminApi, DBProduct, COLOR_OPTIONS } from "@/lib/adminApi";
 import { ProductForm } from "./ProductForm";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
-import { Plus, Pencil, Trash2, Search, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Loader2, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface ProductListProps {
