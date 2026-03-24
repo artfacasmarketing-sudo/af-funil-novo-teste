@@ -88,6 +88,53 @@ export function ProductList({ password }: ProductListProps) {
     }
   };
 
+  const handleExport = () => {
+    const exportData = {
+      version: "1.0",
+      exported_at: new Date().toISOString(),
+      source: "af-funil",
+      products: products.map((p) => ({
+        name: p.name,
+        slug: p.sku.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
+        sku: p.sku,
+        description: null,
+        badge: null,
+        featured: false,
+        active: p.active,
+        category_slug: p.categories[0] || null,
+        image_url: p.image_url,
+        image_alt: p.name,
+        color_variants: Object.keys((p.color_images as Record<string, string>) || {}).map((colorId) => ({
+          name: colorId,
+          sku: (p.color_skus as Record<string, string>)?.[colorId] || `${p.sku}-${colorId}`,
+          image_url: (p.color_images as Record<string, string>)?.[colorId] || p.image_url,
+          active: true,
+        })),
+        pricing: (() => {
+          if (p.price_min === p.price_max || p.price_max === 0) {
+            return [{ min_qty: 1, max_qty: null, unit_price: p.price_min }];
+          }
+          return [
+            { min_qty: 1, max_qty: 49, unit_price: p.price_max },
+            { min_qty: 50, max_qty: null, unit_price: p.price_min },
+          ];
+        })(),
+      })),
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `af-produtos-export-${new Date().toISOString().split("T")[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast({ title: "Exportado!", description: `${products.length} produtos exportados com sucesso.` });
+  };
+
   const openCreate = () => {
     setEditingProduct(null);
     setShowForm(true);
