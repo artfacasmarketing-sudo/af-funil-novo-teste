@@ -161,6 +161,12 @@ export function ProductList({ password }: ProductListProps) {
               className="pl-9 w-full sm:w-64"
             />
           </div>
+          {products.length > 0 && (
+            <Button variant="outline" onClick={handleExport} className="gap-2">
+              <Download className="w-4 h-4" />
+              Exportar para E-commerce
+            </Button>
+          )}
           <Button onClick={openCreate}>
             <Plus className="w-4 h-4 mr-1" /> Novo
           </Button>
