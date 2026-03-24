@@ -9,7 +9,7 @@ import {
 import { adminApi, DBProduct, COLOR_OPTIONS } from "@/lib/adminApi";
 import { ProductForm } from "./ProductForm";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
-import { Plus, Pencil, Trash2, Search, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Loader2, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface ProductListProps {
@@ -88,6 +88,53 @@ export function ProductList({ password }: ProductListProps) {
     }
   };
 
+  const handleExport = () => {
+    const exportData = {
+      version: "1.0",
+      exported_at: new Date().toISOString(),
+      source: "af-funil",
+      products: products.map((p) => ({
+        name: p.name,
+        slug: p.sku.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
+        sku: p.sku,
+        description: null,
+        badge: null,
+        featured: false,
+        active: p.active,
+        category_slug: p.categories[0] || null,
+        image_url: p.image_url,
+        image_alt: p.name,
+        color_variants: Object.keys((p.color_images as Record<string, string>) || {}).map((colorId) => ({
+          name: colorId,
+          sku: (p.color_skus as Record<string, string>)?.[colorId] || `${p.sku}-${colorId}`,
+          image_url: (p.color_images as Record<string, string>)?.[colorId] || p.image_url,
+          active: true,
+        })),
+        pricing: (() => {
+          if (p.price_min === p.price_max || p.price_max === 0) {
+            return [{ min_qty: 1, max_qty: null, unit_price: p.price_min }];
+          }
+          return [
+            { min_qty: 1, max_qty: 49, unit_price: p.price_max },
+            { min_qty: 50, max_qty: null, unit_price: p.price_min },
+          ];
+        })(),
+      })),
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `af-produtos-export-${new Date().toISOString().split("T")[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast({ title: "Exportado!", description: `${products.length} produtos exportados com sucesso.` });
+  };
+
   const openCreate = () => {
     setEditingProduct(null);
     setShowForm(true);
@@ -114,6 +161,12 @@ export function ProductList({ password }: ProductListProps) {
               className="pl-9 w-full sm:w-64"
             />
           </div>
+          {products.length > 0 && (
+            <Button variant="outline" onClick={handleExport} className="gap-2">
+              <Download className="w-4 h-4" />
+              Exportar para E-commerce
+            </Button>
+          )}
           <Button onClick={openCreate}>
             <Plus className="w-4 h-4 mr-1" /> Novo
           </Button>
