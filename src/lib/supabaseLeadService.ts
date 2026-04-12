@@ -277,3 +277,56 @@ export async function submitLeadToCloud(
     error: data?.error
   };
 }
+
+/**
+ * Simplified lead submission for the catalog flow (no diagnostic questions)
+ */
+export async function submitLeadSimplified(
+  formData: { name: string; whatsapp: string; email?: string; company?: string },
+  products: { id: string; name: string; sku: string; quantity: number; avgPrice: number }[]
+): Promise<SubmitResult> {
+  const payload = {
+    name: formData.name.trim(),
+    whatsapp: formData.whatsapp.trim(),
+    email: formData.email?.trim() || null,
+    company: formData.company?.trim() || null,
+    goal: null,
+    occasion: null,
+    audience: null,
+    niche: null,
+    quantity_range: null,
+    budget_range: null,
+    deadline_range: null,
+    categories: [] as string[],
+    path_chosen: 'catalogo-direto',
+    colors: { brand_colors: false, selected: [] as string[], codes: '' },
+    file_urls: [] as string[],
+    selected_products: products.map(p => ({ name: p.name, sku: p.sku, quantity: p.quantity, unit_price: p.avgPrice })),
+    must_have: null,
+    document_type: null,
+    document_number: null,
+    state_registration: null,
+    presentation_preference: null,
+    scheduled_date: null,
+    scheduled_time: null,
+    utm: getUTMParams(),
+    referrer: getReferrer(),
+    page_url: getPageURL(),
+  };
+
+  const { data, error } = await supabase.functions.invoke('submit-lead', {
+    body: payload,
+  });
+
+  if (error) {
+    if (import.meta.env.DEV) console.error('[Lead] Edge function error:', error);
+    return { success: false, error: error.message };
+  }
+
+  return {
+    success: data?.success || false,
+    lead_id: data?.lead_id,
+    webhook_sent: data?.webhook_sent,
+    error: data?.error,
+  };
+}
