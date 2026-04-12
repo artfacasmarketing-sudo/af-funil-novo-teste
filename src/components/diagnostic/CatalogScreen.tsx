@@ -301,13 +301,16 @@ export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
             {selected.size > 0 ? (
               <div>
                 <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">
-                  Orçamento estimado
+                  Orçamento aproximado
                 </p>
                 <p className="text-lg sm:text-xl font-bold text-primary">
                   {formatCurrency(totalEstimate)}
                 </p>
                 <p className="text-[9px] text-muted-foreground">
                   {selected.size} produto{selected.size > 1 ? 's' : ''} selecionado{selected.size > 1 ? 's' : ''}
+                </p>
+                <p className="text-[8px] text-muted-foreground/70">
+                  * Valores aproximados, sujeitos a confirmação
                 </p>
               </div>
             ) : (
