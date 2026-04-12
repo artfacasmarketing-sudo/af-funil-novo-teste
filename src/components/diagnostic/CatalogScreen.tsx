@@ -240,7 +240,7 @@ export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
                       </h3>
                       <p className="text-primary font-bold text-sm sm:text-base">
                         {formatCurrency(avgPrice)}
-                        <span className="text-[9px] text-muted-foreground font-normal ml-1">/ un</span>
+                        <span className="text-[9px] text-muted-foreground font-normal ml-1">aprox. / un</span>
                       </p>
                     </div>
 
