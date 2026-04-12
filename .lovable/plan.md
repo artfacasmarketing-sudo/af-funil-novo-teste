@@ -1,31 +1,36 @@
 
 
-## Plano: Chips de quantidade pré-definida + ajuste fino + label "preço aproximado"
+## Plano: Adicionar upload de logo na tela de contato
 
-### Alteração: `src/components/diagnostic/CatalogScreen.tsx`
+### Alterações
 
-**1. Adicionar chips de quantidade pré-definida**
-- Dentro do card do produto selecionado, acima dos botões +/-, adicionar uma linha de 4 chips: `10`, `50`, `100`, `500`
-- Clicar num chip define a quantidade para aquele valor
-- Chip ativo (quantidade atual = valor do chip) fica destacado com `bg-primary`
-- Quantidade padrão ao selecionar produto pela primeira vez: **10** (em vez de 1)
+**1. `src/components/diagnostic/ContactScreen.tsx`**
+- Adicionar seção de upload de arquivos da marca (logo) no formulário, antes do botão de enviar
+- Componente: input file com aceite de PNG, JPG, WebP, PDF (máx 5MB cada, até 10 arquivos)
+- Preview dos arquivos selecionados com botão de remover
+- Upload obrigatório: botão "Solicitar orçamento" desabilitado se nenhum arquivo anexado, com aviso visual
+- No submit, chamar `uploadBrandFiles()` antes de enviar o lead
+- Passar as URLs resultantes para `submitLeadSimplified()` (atualizar `file_urls` no payload)
 
-**2. Manter botões +/- para ajuste fino**
-- Continuam funcionando exatamente como hoje (±1, mínimo 1)
-- Ficam abaixo dos chips
+**2. `src/lib/supabaseLeadService.ts`**
+- Atualizar `submitLeadSimplified` para aceitar `fileUrls: string[]` como parâmetro
+- Incluir `file_urls: fileUrls` no payload em vez de array vazio
 
-**3. Labels de "preço aproximado"**
-- No card do produto: trocar `"/ un"` por `"aprox. / un"` 
-- No subtotal do card: trocar `"Subtotal:"` por `"Subtotal aprox.:"` 
-- Na barra inferior: trocar `"Orçamento estimado"` por `"Orçamento aproximado"` e adicionar uma linha pequena: `"* Valores aproximados, sujeitos a confirmação"`
-
-**Layout visual do seletor (dentro do card):**
+**Visual no formulário:**
 ```text
-[ 10 ] [ 50 ] [ 100 ] [ 500 ]
-    [ - ]    42    [ + ]
-   Subtotal aprox.: R$ X.XXX,XX
+[Nome *]
+[WhatsApp *]
+[E-mail]
+[Empresa]
+
+📎 Envie a logo da sua marca *
+[Selecionar arquivos]  PNG, JPG, WebP ou PDF (máx 5MB)
+  logo.png ✕
+  marca.pdf ✕
+
+[Solicitar orçamento]  ← desabilitado sem arquivos
 ```
 
 ### Resultado
-O cliente tem atalhos rápidos para quantidades comuns, pode ajustar por unidade, e fica claro que os preços são aproximados.
+O lead sempre chega com os arquivos da marca anexados, garantindo que o especialista tenha a logo para montar o orçamento.
 
