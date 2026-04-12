@@ -3,8 +3,27 @@ import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { LogoHeader } from './LogoHeader';
 import { fetchProductsFromDB, Product } from '@/data/products';
-import { Check, Minus, Plus, ShoppingBag } from 'lucide-react';
+import { Check, Minus, Plus, ShoppingBag, Search } from 'lucide-react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { Input } from '@/components/ui/input';
+
+const CATEGORY_LABELS: Record<string, string> = {
+  cadernos: 'Cadernos',
+  camping: 'Camping',
+  canivetes: 'Canivetes',
+  'chapéus': 'Chapéus',
+  chapeus: 'Chapéus',
+  copos: 'Copos',
+  facas: 'Facas',
+  garrafas: 'Garrafas',
+  kits: 'Kits',
+  'Mais Vendidos': 'Mais Vendidos',
+  'Kit Facas': 'Kit Facas',
+};
+
+function removeDiacritics(str: string): string {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
 
 export interface CatalogProduct {
   id: string;
@@ -25,6 +44,8 @@ function formatCurrency(value: number): string {
 
 export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
   const [selected, setSelected] = useState<Map<string, number>>(new Map());
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState('all');
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
@@ -36,10 +57,22 @@ export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
     staleTime: 5 * 60 * 1000,
   });
 
-  const products = useMemo(() => {
-    if (!dbProducts) return [];
-    return dbProducts;
-  }, [dbProducts]);
+  const products = useMemo(() => dbProducts || [], [dbProducts]);
+
+  const categories = useMemo(() => {
+    const cats = new Set<string>();
+    products.forEach(p => p.categories?.forEach(c => cats.add(c)));
+    return Array.from(cats).sort();
+  }, [products]);
+
+  const filteredProducts = useMemo(() => {
+    const q = removeDiacritics(searchQuery.toLowerCase().trim());
+    return products.filter(p => {
+      const matchesSearch = !q || removeDiacritics(p.name.toLowerCase()).includes(q);
+      const matchesCategory = activeCategory === 'all' || p.categories?.includes(activeCategory);
+      return matchesSearch && matchesCategory;
+    });
+  }, [products, searchQuery, activeCategory]);
 
   const toggleProduct = (product: Product) => {
     onClickSFX();
@@ -114,6 +147,44 @@ export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
             </p>
           </div>
 
+          {/* Search & Category Filters */}
+          <div className="space-y-3 sticky top-0 z-20 bg-background/95 backdrop-blur-md py-3 -mx-4 px-4 sm:-mx-6 sm:px-6">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar produto..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 rounded-xl bg-secondary border-0 h-10"
+              />
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+              <button
+                onClick={() => setActiveCategory('all')}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  activeCategory === 'all'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Todos
+              </button>
+              {categories.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                    activeCategory === cat
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-secondary text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {CATEGORY_LABELS[cat] || cat.charAt(0).toUpperCase() + cat.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Product grid */}
           {isLoading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -121,9 +192,14 @@ export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
                 <div key={i} className="rounded-2xl bg-secondary animate-pulse aspect-square" />
               ))}
             </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <Search className="w-8 h-8 mx-auto mb-3 opacity-40" />
+              <p className="text-sm">Nenhum produto encontrado</p>
+            </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 animate-fade-in">
-              {products.map(product => {
+              {filteredProducts.map(product => {
                 const isSelected = selected.has(product.id);
                 const qty = selected.get(product.id) || 0;
                 const avgPrice = (product.price_min + product.price_max) / 2;
