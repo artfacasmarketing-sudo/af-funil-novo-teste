@@ -81,7 +81,7 @@ export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
       if (next.has(product.id)) {
         next.delete(product.id);
       } else {
-        next.set(product.id, 1);
+        next.set(product.id, 10);
       }
       return next;
     });
