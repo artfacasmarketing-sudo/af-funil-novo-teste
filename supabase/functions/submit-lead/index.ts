@@ -1,9 +1,18 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') ?? '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
+const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || '';
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get('origin') || '';
+  let allowedOrigin = ALLOWED_ORIGIN || '*';
+  if (origin === ALLOWED_ORIGIN || origin.endsWith('.lovable.app')) {
+    allowedOrigin = origin;
+  }
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
+  };
 }
 
 const N8N_WEBHOOK = Deno.env.get('N8N_WEBHOOK_URL')
