@@ -1,25 +1,31 @@
 
 
-## Plano: Adicionar busca e filtro por categorias no CatalogScreen
+## Plano: Chips de quantidade pré-definida + ajuste fino + label "preço aproximado"
 
-### Alteração em um único arquivo: `src/components/diagnostic/CatalogScreen.tsx`
+### Alteração: `src/components/diagnostic/CatalogScreen.tsx`
 
-**1. Barra de pesquisa**
-- Campo de texto com ícone de lupa, abaixo do título e acima do grid
-- Filtra produtos pelo nome em tempo real (case-insensitive, sem acentos)
-- Placeholder: "Buscar produto..."
+**1. Adicionar chips de quantidade pré-definida**
+- Dentro do card do produto selecionado, acima dos botões +/-, adicionar uma linha de 4 chips: `10`, `50`, `100`, `500`
+- Clicar num chip define a quantidade para aquele valor
+- Chip ativo (quantidade atual = valor do chip) fica destacado com `bg-primary`
+- Quantidade padrão ao selecionar produto pela primeira vez: **10** (em vez de 1)
 
-**2. Filtro por categorias**
-- Linha de chips/botões horizontais com scroll, abaixo da busca
-- Categorias extraídas dinamicamente dos produtos carregados (ex: Todos, Cadernos, Camping, Canivetes, Chapéus, Copos, Facas, Garrafas, Kits)
-- "Todos" selecionado por padrão
-- Labels formatados com capitalize e acentos corretos via mapa de labels
-- Ao selecionar uma categoria, mostra apenas produtos daquela categoria
-- Busca e categoria funcionam juntos (AND)
+**2. Manter botões +/- para ajuste fino**
+- Continuam funcionando exatamente como hoje (±1, mínimo 1)
+- Ficam abaixo dos chips
 
-**3. Experiência**
-- Barra de pesquisa e categorias ficam fixas/sticky abaixo do título para facilitar navegação
-- Grid de produtos atualiza instantaneamente
-- Se nenhum produto encontrado, mostra mensagem "Nenhum produto encontrado"
-- Seleções de produtos (quantidades) se mantêm mesmo ao trocar filtro
+**3. Labels de "preço aproximado"**
+- No card do produto: trocar `"/ un"` por `"aprox. / un"` 
+- No subtotal do card: trocar `"Subtotal:"` por `"Subtotal aprox.:"` 
+- Na barra inferior: trocar `"Orçamento estimado"` por `"Orçamento aproximado"` e adicionar uma linha pequena: `"* Valores aproximados, sujeitos a confirmação"`
+
+**Layout visual do seletor (dentro do card):**
+```text
+[ 10 ] [ 50 ] [ 100 ] [ 500 ]
+    [ - ]    42    [ + ]
+   Subtotal aprox.: R$ X.XXX,XX
+```
+
+### Resultado
+O cliente tem atalhos rápidos para quantidades comuns, pode ajustar por unidade, e fica claro que os preços são aproximados.
 
