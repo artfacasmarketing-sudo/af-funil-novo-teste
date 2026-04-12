@@ -3,8 +3,27 @@ import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { LogoHeader } from './LogoHeader';
 import { fetchProductsFromDB, Product } from '@/data/products';
-import { Check, Minus, Plus, ShoppingBag } from 'lucide-react';
+import { Check, Minus, Plus, ShoppingBag, Search } from 'lucide-react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { Input } from '@/components/ui/input';
+
+const CATEGORY_LABELS: Record<string, string> = {
+  cadernos: 'Cadernos',
+  camping: 'Camping',
+  canivetes: 'Canivetes',
+  'chapéus': 'Chapéus',
+  chapeus: 'Chapéus',
+  copos: 'Copos',
+  facas: 'Facas',
+  garrafas: 'Garrafas',
+  kits: 'Kits',
+  'Mais Vendidos': 'Mais Vendidos',
+  'Kit Facas': 'Kit Facas',
+};
+
+function removeDiacritics(str: string): string {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
 
 export interface CatalogProduct {
   id: string;
@@ -25,6 +44,8 @@ function formatCurrency(value: number): string {
 
 export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
   const [selected, setSelected] = useState<Map<string, number>>(new Map());
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState('all');
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
@@ -36,10 +57,22 @@ export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
     staleTime: 5 * 60 * 1000,
   });
 
-  const products = useMemo(() => {
-    if (!dbProducts) return [];
-    return dbProducts;
-  }, [dbProducts]);
+  const products = useMemo(() => dbProducts || [], [dbProducts]);
+
+  const categories = useMemo(() => {
+    const cats = new Set<string>();
+    products.forEach(p => p.categories?.forEach(c => cats.add(c)));
+    return Array.from(cats).sort();
+  }, [products]);
+
+  const filteredProducts = useMemo(() => {
+    const q = removeDiacritics(searchQuery.toLowerCase().trim());
+    return products.filter(p => {
+      const matchesSearch = !q || removeDiacritics(p.name.toLowerCase()).includes(q);
+      const matchesCategory = activeCategory === 'all' || p.categories?.includes(activeCategory);
+      return matchesSearch && matchesCategory;
+    });
+  }, [products, searchQuery, activeCategory]);
 
   const toggleProduct = (product: Product) => {
     onClickSFX();
