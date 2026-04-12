@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { submitLeadSimplified } from '@/lib/supabaseLeadService';
-import { Loader2, CheckCircle2, AlertCircle, MessageCircle, ShoppingBag } from 'lucide-react';
+import { submitLeadSimplified, uploadBrandFiles } from '@/lib/supabaseLeadService';
+import { Loader2, CheckCircle2, AlertCircle, MessageCircle, ShoppingBag, Upload, X, FileIcon } from 'lucide-react';
 import { LogoHeader } from './LogoHeader';
 import { useMetaPixel } from '@/hooks/useMetaPixel';
 import { trackLeadServer } from '@/lib/metaConversions';
@@ -21,14 +21,19 @@ function formatCurrency(value: number): string {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
+const MAX_FILES = 10;
+
 export function ContactScreen({ selectedProducts, onCelebrate }: ContactScreenProps) {
   const [name, setName] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [whatsappError, setWhatsappError] = useState('');
   const [email, setEmail] = useState('');
   const [company, setCompany] = useState('');
+  const [files, setFiles] = useState<File[]>([]);
+  const [fileError, setFileError] = useState('');
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
   const [showCelebration, setShowCelebration] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { trackLead } = useMetaPixel();
   const { fbp, fbc } = useMetaCookies();
@@ -64,17 +69,40 @@ export function ContactScreen({ selectedProducts, onCelebrate }: ContactScreenPr
     return true;
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = Array.from(e.target.files || []);
+    const remaining = MAX_FILES - files.length;
+    const toAdd = selected.slice(0, remaining);
+    if (toAdd.length > 0) {
+      setFiles(prev => [...prev, ...toAdd]);
+      setFileError('');
+    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const removeFile = (index: number) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async () => {
     if (!name.trim()) { alert('Por favor, preencha seu nome.'); return; }
     if (!whatsapp.trim()) { setWhatsappError('WhatsApp é obrigatório.'); return; }
     if (!validateWhatsapp(whatsapp)) return;
+    if (files.length === 0) {
+      setFileError('Envie pelo menos um arquivo com a logo da sua marca.');
+      return;
+    }
 
     setSubmitState('loading');
 
     try {
+      // Upload files first
+      const fileUrls = await uploadBrandFiles(files);
+
       const result = await submitLeadSimplified(
         { name, whatsapp, email, company },
-        selectedProducts
+        selectedProducts,
+        fileUrls
       );
 
       if (result.success && result.lead_id) {
@@ -238,13 +266,60 @@ export function ContactScreen({ selectedProducts, onCelebrate }: ContactScreenPr
               className="bg-secondary border-border py-6 text-base"
               disabled={submitState === 'loading'}
             />
+
+            {/* Logo upload */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Upload className="w-4 h-4 text-primary" />
+                Envie a logo da sua marca <span className="text-destructive">*</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={submitState === 'loading' || files.length >= MAX_FILES}
+                className="w-full rounded-xl border-2 border-dashed border-border bg-secondary/50 py-6 text-sm text-muted-foreground hover:border-primary/50 hover:bg-secondary transition-colors disabled:opacity-50"
+              >
+                Selecionar arquivos
+                <br />
+                <span className="text-xs">PNG, JPG, WebP ou PDF (máx 5MB cada)</span>
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".png,.jpg,.jpeg,.webp,.pdf"
+                multiple
+                className="hidden"
+                onChange={handleFileChange}
+              />
+              {files.length > 0 && (
+                <div className="space-y-1.5">
+                  {files.map((file, i) => (
+                    <div key={i} className="flex items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-sm">
+                      <FileIcon className="w-4 h-4 text-muted-foreground shrink-0" />
+                      <span className="truncate flex-1">{file.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeFile(i)}
+                        className="text-muted-foreground hover:text-destructive shrink-0"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {fileError && <p className="text-destructive text-xs">{fileError}</p>}
+              {files.length === 0 && !fileError && (
+                <p className="text-muted-foreground text-xs">Obrigatório para montarmos o orçamento personalizado</p>
+              )}
+            </div>
           </div>
 
           {/* Submit */}
           <Button
             onClick={handleSubmit}
             size="lg"
-            disabled={submitState === 'loading'}
+            disabled={submitState === 'loading' || files.length === 0}
             className="w-full rounded-2xl py-6 sm:py-7 font-semibold text-base glow-hover"
           >
             {submitState === 'loading' ? (

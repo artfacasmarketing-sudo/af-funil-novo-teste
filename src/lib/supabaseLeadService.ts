@@ -283,7 +283,8 @@ export async function submitLeadToCloud(
  */
 export async function submitLeadSimplified(
   formData: { name: string; whatsapp: string; email?: string; company?: string },
-  products: { id: string; name: string; sku: string; quantity: number; avgPrice: number }[]
+  products: { id: string; name: string; sku: string; quantity: number; avgPrice: number }[],
+  fileUrls: string[] = []
 ): Promise<SubmitResult> {
   const payload = {
     name: formData.name.trim(),
@@ -300,7 +301,7 @@ export async function submitLeadSimplified(
     categories: [] as string[],
     path_chosen: 'catalogo-direto',
     colors: { brand_colors: false, selected: [] as string[], codes: '' },
-    file_urls: [] as string[],
+    file_urls: fileUrls,
     selected_products: products.map(p => ({ name: p.name, sku: p.sku, quantity: p.quantity, unit_price: p.avgPrice })),
     must_have: null,
     document_type: null,
