@@ -147,6 +147,44 @@ export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
             </p>
           </div>
 
+          {/* Search & Category Filters */}
+          <div className="space-y-3 sticky top-0 z-20 bg-background/95 backdrop-blur-md py-3 -mx-4 px-4 sm:-mx-6 sm:px-6">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar produto..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 rounded-xl bg-secondary border-0 h-10"
+              />
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+              <button
+                onClick={() => setActiveCategory('all')}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  activeCategory === 'all'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Todos
+              </button>
+              {categories.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                    activeCategory === cat
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-secondary text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {CATEGORY_LABELS[cat] || cat.charAt(0).toUpperCase() + cat.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Product grid */}
           {isLoading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -154,9 +192,14 @@ export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
                 <div key={i} className="rounded-2xl bg-secondary animate-pulse aspect-square" />
               ))}
             </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <Search className="w-8 h-8 mx-auto mb-3 opacity-40" />
+              <p className="text-sm">Nenhum produto encontrado</p>
+            </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 animate-fade-in">
-              {products.map(product => {
+              {filteredProducts.map(product => {
                 const isSelected = selected.has(product.id);
                 const qty = selected.get(product.id) || 0;
                 const avgPrice = (product.price_min + product.price_max) / 2;
