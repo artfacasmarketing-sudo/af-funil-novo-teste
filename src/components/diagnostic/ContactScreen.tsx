@@ -32,6 +32,7 @@ export function ContactScreen({ selectedProducts, onCelebrate }: ContactScreenPr
   const [files, setFiles] = useState<File[]>([]);
   const [fileError, setFileError] = useState('');
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -94,10 +95,18 @@ export function ContactScreen({ selectedProducts, onCelebrate }: ContactScreenPr
     }
 
     setSubmitState('loading');
+    setErrorMessage(null);
 
     try {
       // Upload files first
-      const fileUrls = await uploadBrandFiles(files);
+      let fileUrls: string[];
+      try {
+        fileUrls = await uploadBrandFiles(files);
+      } catch (uploadErr: any) {
+        setErrorMessage(uploadErr.message || 'Falha no upload dos arquivos.');
+        setSubmitState('error');
+        return;
+      }
 
       const result = await submitLeadSimplified(
         { name, whatsapp, email, company },
@@ -125,9 +134,11 @@ export function ContactScreen({ selectedProducts, onCelebrate }: ContactScreenPr
 
         setSubmitState('success');
       } else {
+        setErrorMessage(result.error || 'Erro ao enviar. Tente novamente.');
         setSubmitState('error');
       }
-    } catch {
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Erro inesperado. Tente novamente.');
       setSubmitState('error');
     }
   };
@@ -179,7 +190,7 @@ export function ContactScreen({ selectedProducts, onCelebrate }: ContactScreenPr
             <div className="space-y-3">
               <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">Ops!</h2>
               <p className="text-muted-foreground text-sm sm:text-base">
-                Tivemos uma instabilidade. Por favor, tente novamente.
+                {errorMessage || 'Tivemos uma instabilidade. Por favor, tente novamente.'}
               </p>
             </div>
             <Button onClick={() => setSubmitState('idle')} size="lg" className="w-full max-w-xs rounded-2xl py-6 font-semibold glow-hover">

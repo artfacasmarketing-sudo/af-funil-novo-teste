@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') {
     return new Response(
       JSON.stringify({ success: false, error: 'Method not allowed' }),
-      { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 
@@ -127,7 +127,7 @@ Deno.serve(async (req) => {
       console.log('[submit-lead] Rate limit exceeded for IP:', clientIP)
       return new Response(
         JSON.stringify({ success: false, error: 'Muitas requisições. Tente novamente em 1 minuto.' }),
-        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
@@ -138,7 +138,7 @@ Deno.serve(async (req) => {
     } catch {
       return new Response(
         JSON.stringify({ success: false, error: 'Invalid JSON payload' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
@@ -149,7 +149,7 @@ Deno.serve(async (req) => {
       console.log('[submit-lead] Validation failed:', JSON.stringify(validationResult.error.errors))
       return new Response(
         JSON.stringify({ success: false, error: 'Dados inválidos. Verifique os campos.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
@@ -205,7 +205,7 @@ Deno.serve(async (req) => {
       console.error('[submit-lead] Database error:', dbError)
       return new Response(
         JSON.stringify({ success: false, error: 'Erro ao salvar. Tente novamente.' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
@@ -279,7 +279,7 @@ Deno.serve(async (req) => {
     console.error('[submit-lead] Unexpected error:', error)
     return new Response(
       JSON.stringify({ success: false, error: 'Erro inesperado. Tente novamente.' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 })

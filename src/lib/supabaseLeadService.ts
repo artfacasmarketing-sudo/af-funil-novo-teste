@@ -121,16 +121,15 @@ function validateFile(file: File): { valid: boolean; error?: string } {
  */
 export async function uploadBrandFiles(files: File[]): Promise<string[]> {
   const urls: string[] = [];
+  const errors: string[] = [];
   
   for (const file of files) {
-    // Validate file before upload
     const validation = validateFile(file);
     if (!validation.valid) {
-      console.warn('[Storage] File validation failed:', validation.error);
+      errors.push(validation.error!);
       continue;
     }
     
-    // Use random UUID to prevent URL enumeration attacks
     const uuid = crypto.randomUUID();
     const ext = file.name.split('.').pop() || 'bin';
     const fileName = `${uuid}.${ext}`;
@@ -146,6 +145,7 @@ export async function uploadBrandFiles(files: File[]): Promise<string[]> {
     
     if (error) {
       console.error('[Storage] Upload error:', error);
+      errors.push(`Falha ao enviar "${file.name}": ${error.message}`);
       continue;
     }
 
@@ -157,6 +157,10 @@ export async function uploadBrandFiles(files: File[]): Promise<string[]> {
       if (import.meta.env.DEV) console.log('[Storage] File uploaded, URL:', urlData.publicUrl);
       urls.push(urlData.publicUrl);
     }
+  }
+  
+  if (urls.length === 0) {
+    throw new Error(errors.length > 0 ? errors.join('; ') : 'Nenhum arquivo foi enviado com sucesso.');
   }
   
   return urls;
