@@ -81,7 +81,7 @@ export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
       if (next.has(product.id)) {
         next.delete(product.id);
       } else {
-        next.set(product.id, 1);
+        next.set(product.id, 10);
       }
       return next;
     });
@@ -240,13 +240,30 @@ export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
                       </h3>
                       <p className="text-primary font-bold text-sm sm:text-base">
                         {formatCurrency(avgPrice)}
-                        <span className="text-[9px] text-muted-foreground font-normal ml-1">/ un</span>
+                        <span className="text-[9px] text-muted-foreground font-normal ml-1">aprox. / un</span>
                       </p>
                     </div>
 
                     {/* Quantity controls - only when selected */}
                     {isSelected && (
-                      <div className="px-3 pb-3 animate-fade-in">
+                      <div className="px-3 pb-3 animate-fade-in space-y-2">
+                        {/* Preset quantity chips */}
+                        <div className="flex gap-1.5">
+                          {[10, 50, 100, 500].map(presetQty => (
+                            <button
+                              key={presetQty}
+                              onClick={(e) => { e.stopPropagation(); setSelected(prev => { const next = new Map(prev); next.set(product.id, presetQty); return next; }); }}
+                              className={`flex-1 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                                qty === presetQty
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'bg-secondary text-muted-foreground hover:text-foreground'
+                              }`}
+                            >
+                              {presetQty}
+                            </button>
+                          ))}
+                        </div>
+                        {/* Fine-tune +/- */}
                         <div className="flex items-center justify-between bg-secondary rounded-xl p-1">
                           <button
                             onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, -1); }}
@@ -264,8 +281,8 @@ export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
                             <Plus className="w-3.5 h-3.5" />
                           </button>
                         </div>
-                        <p className="text-center text-[10px] text-muted-foreground mt-1 mono-font">
-                          Subtotal: {formatCurrency(avgPrice * qty)}
+                        <p className="text-center text-[10px] text-muted-foreground mono-font">
+                          Subtotal aprox.: {formatCurrency(avgPrice * qty)}
                         </p>
                       </div>
                     )}
@@ -284,13 +301,16 @@ export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
             {selected.size > 0 ? (
               <div>
                 <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">
-                  Orçamento estimado
+                  Orçamento aproximado
                 </p>
                 <p className="text-lg sm:text-xl font-bold text-primary">
                   {formatCurrency(totalEstimate)}
                 </p>
                 <p className="text-[9px] text-muted-foreground">
                   {selected.size} produto{selected.size > 1 ? 's' : ''} selecionado{selected.size > 1 ? 's' : ''}
+                </p>
+                <p className="text-[8px] text-muted-foreground/70">
+                  * Valores aproximados, sujeitos a confirmação
                 </p>
               </div>
             ) : (
