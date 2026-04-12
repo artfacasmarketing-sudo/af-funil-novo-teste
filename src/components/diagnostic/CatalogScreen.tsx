@@ -246,7 +246,24 @@ export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
 
                     {/* Quantity controls - only when selected */}
                     {isSelected && (
-                      <div className="px-3 pb-3 animate-fade-in">
+                      <div className="px-3 pb-3 animate-fade-in space-y-2">
+                        {/* Preset quantity chips */}
+                        <div className="flex gap-1.5">
+                          {[10, 50, 100, 500].map(presetQty => (
+                            <button
+                              key={presetQty}
+                              onClick={(e) => { e.stopPropagation(); setSelected(prev => { const next = new Map(prev); next.set(product.id, presetQty); return next; }); }}
+                              className={`flex-1 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                                qty === presetQty
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'bg-secondary text-muted-foreground hover:text-foreground'
+                              }`}
+                            >
+                              {presetQty}
+                            </button>
+                          ))}
+                        </div>
+                        {/* Fine-tune +/- */}
                         <div className="flex items-center justify-between bg-secondary rounded-xl p-1">
                           <button
                             onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, -1); }}
@@ -264,8 +281,8 @@ export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
                             <Plus className="w-3.5 h-3.5" />
                           </button>
                         </div>
-                        <p className="text-center text-[10px] text-muted-foreground mt-1 mono-font">
-                          Subtotal: {formatCurrency(avgPrice * qty)}
+                        <p className="text-center text-[10px] text-muted-foreground mono-font">
+                          Subtotal aprox.: {formatCurrency(avgPrice * qty)}
                         </p>
                       </div>
                     )}
