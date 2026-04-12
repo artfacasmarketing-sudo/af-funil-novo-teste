@@ -1,36 +1,43 @@
 
 
-## Plano: Adicionar upload de logo na tela de contato
+## Plano: Corrigir CORS para funcionar no preview e em produção
 
-### Alterações
+### Problema identificado
 
-**1. `src/components/diagnostic/ContactScreen.tsx`**
-- Adicionar seção de upload de arquivos da marca (logo) no formulário, antes do botão de enviar
-- Componente: input file com aceite de PNG, JPG, WebP, PDF (máx 5MB cada, até 10 arquivos)
-- Preview dos arquivos selecionados com botão de remover
-- Upload obrigatório: botão "Solicitar orçamento" desabilitado se nenhum arquivo anexado, com aviso visual
-- No submit, chamar `uploadBrandFiles()` antes de enviar o lead
-- Passar as URLs resultantes para `submitLeadSimplified()` (atualizar `file_urls` no payload)
+A edge function `submit-lead` usa o secret `ALLOWED_ORIGIN` (configurado como `https://consultoria-afbrindes.com`) no header `Access-Control-Allow-Origin`. Quando o app roda no preview do Lovable (`*.lovable.app`), o browser bloqueia a resposta por CORS mismatch.
 
-**2. `src/lib/supabaseLeadService.ts`**
-- Atualizar `submitLeadSimplified` para aceitar `fileUrls: string[]` como parâmetro
-- Incluir `file_urls: fileUrls` no payload em vez de array vazio
+### Solução
 
-**Visual no formulário:**
-```text
-[Nome *]
-[WhatsApp *]
-[E-mail]
-[Empresa]
+**Arquivo: `supabase/functions/submit-lead/index.ts`**
 
-📎 Envie a logo da sua marca *
-[Selecionar arquivos]  PNG, JPG, WebP ou PDF (máx 5MB)
-  logo.png ✕
-  marca.pdf ✕
+Alterar a lógica de CORS para aceitar múltiplas origens de forma segura:
+- Ler `ALLOWED_ORIGIN` como antes (produção)
+- Verificar o header `Origin` da request
+- Se bater com a origem permitida OU com `*.lovable.app`, usar essa origem no `Access-Control-Allow-Origin`
+- Caso contrário, usar a origem configurada (produção)
+- Isso mantém a segurança (não usa `*`) mas permite o preview funcionar
 
-[Solicitar orçamento]  ← desabilitado sem arquivos
+```typescript
+const ALLOWED_ORIGINS = [
+  Deno.env.get('ALLOWED_ORIGIN'),
+  // Preview domains
+].filter(Boolean) as string[];
+
+function getCorsOrigin(req: Request): string {
+  const origin = req.headers.get('origin') || '';
+  // Allow production domain
+  if (ALLOWED_ORIGINS.includes(origin)) return origin;
+  // Allow Lovable preview domains
+  if (origin.endsWith('.lovable.app')) return origin;
+  // Fallback
+  return ALLOWED_ORIGINS[0] || '*';
+}
 ```
 
+Atualizar `corsHeaders` para ser dinâmico (construído a cada request com a origem correta).
+
+**Mesma correção em `supabase/functions/meta-conversions/index.ts`** se também usar `ALLOWED_ORIGIN`.
+
 ### Resultado
-O lead sempre chega com os arquivos da marca anexados, garantindo que o especialista tenha a logo para montar o orçamento.
+O fluxo completo (catálogo → contato → upload → submit) funcionará tanto no preview quanto em produção.
 
