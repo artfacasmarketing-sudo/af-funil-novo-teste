@@ -116,7 +116,8 @@ export function ContactScreen({ selectedProducts, onCelebrate }: ContactScreenPr
       const result = await submitLeadSimplified(
         { name, whatsapp, email, company },
         selectedProducts,
-        fileUrls
+        fileUrls,
+        { selectedColors, brandFlag, customHex }
       );
 
       if (result.success && result.lead_id) {

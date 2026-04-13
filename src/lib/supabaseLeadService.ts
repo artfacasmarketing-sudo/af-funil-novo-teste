@@ -288,8 +288,11 @@ export async function submitLeadToCloud(
 export async function submitLeadSimplified(
   formData: { name: string; whatsapp: string; email?: string; company?: string },
   products: { id: string; name: string; sku: string; quantity: number; avgPrice: number }[],
-  fileUrls: string[] = []
+  fileUrls: string[] = [],
+  colorData?: { selectedColors: string[]; brandFlag: boolean; customHex: string }
 ): Promise<SubmitResult> {
+  const selectedColorLabels = (colorData?.selectedColors || []).map(id => colorLabels[id] || id);
+
   const payload = {
     name: formData.name.trim(),
     whatsapp: formData.whatsapp.trim(),
@@ -304,7 +307,11 @@ export async function submitLeadSimplified(
     deadline_range: null,
     categories: [] as string[],
     path_chosen: 'catalogo-direto',
-    colors: { brand_colors: false, selected: [] as string[], codes: '' },
+    colors: {
+      brand_colors: colorData?.brandFlag || false,
+      selected: selectedColorLabels,
+      codes: colorData?.customHex || '',
+    },
     file_urls: fileUrls,
     selected_products: products.map(p => ({ name: p.name, sku: p.sku, quantity: p.quantity, unit_price: p.avgPrice })),
     must_have: null,
