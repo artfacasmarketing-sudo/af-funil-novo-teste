@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { TrustedBrandsMarquee } from './TrustedBrandsMarquee';
 import { useMetaPixel } from '@/hooks/useMetaPixel';
 import { trackInitiateCheckoutServer } from '@/lib/metaConversions';
-import { useMetaCookie } from '@/contexts/MetaCookieContext';
+import { useMetaCookies } from '@/contexts/MetaCookieContext';
 import logoAf from '@/assets/logo-af.png';
 
 interface IntroScreenProps {
@@ -12,7 +12,7 @@ interface IntroScreenProps {
 
 export function IntroScreen({ onStart }: IntroScreenProps) {
   const { trackInitiateCheckout } = useMetaPixel();
-  const { fbp, fbc } = useMetaCookie();
+  const { fbp, fbc } = useMetaCookies();
 
   const handleStart = () => {
     const eventId = trackInitiateCheckout();

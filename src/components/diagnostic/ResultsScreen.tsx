@@ -5,7 +5,7 @@ import { DiagnosticResults } from '@/lib/resultsCalculator';
 import { LogoHeader } from './LogoHeader';
 import { useMetaPixel } from '@/hooks/useMetaPixel';
 import { trackViewContentServer } from '@/lib/metaConversions';
-import { useMetaCookie } from '@/contexts/MetaCookieContext';
+import { useMetaCookies } from '@/contexts/MetaCookieContext';
 
 interface ResultsScreenProps {
   results: DiagnosticResults;
@@ -14,7 +14,7 @@ interface ResultsScreenProps {
 
 export function ResultsScreen({ results, onPathSelected }: ResultsScreenProps) {
   const { trackViewContent } = useMetaPixel();
-  const { fbp, fbc } = useMetaCookie();
+  const { fbp, fbc } = useMetaCookies();
   const hasTracked = useRef(false);
 
   useEffect(() => {
