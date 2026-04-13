@@ -1,45 +1,43 @@
 
 
-## Plano: Preço por unidade dinâmico baseado na quantidade
-
-### Lógica de preços
-
-Cada produto tem `price_min` (preço mais barato, para grandes quantidades) e `price_max` (preço mais caro, para poucas unidades). A lógica será:
-
-| Quantidade | Preço unitário |
-|---|---|
-| 1–9 | `price_max` |
-| 10–49 | interpolação 80% max / 20% min |
-| 50–99 | interpolação 60% max / 40% min |
-| 100–499 | interpolação 40% max / 60% min |
-| 500–999 | interpolação 20% max / 80% min |
-| 1000+ | `price_min` |
-
-Para produtos onde `price_min === price_max`, o preço fica fixo independente da quantidade.
+## Plano: Corrigir tratamento de erros no funil
 
 ### Alterações
 
-**Arquivo: `src/components/diagnostic/CatalogScreen.tsx`**
+**1. `src/components/diagnostic/ContactScreen.tsx`** — 3 correções:
 
-1. Criar função `getUnitPrice(product, quantity)` com a tabela de faixas acima
-2. Substituir todos os usos de `(price_min + price_max) / 2` por `getUnitPrice(product, qty)`
-3. No card do produto:
-   - Mostrar o preço unitário atual baseado na quantidade selecionada
-   - Adicionar indicador visual tipo "↓ preço reduz com mais unidades" quando `price_min < price_max`
-4. No `totalEstimate`, usar `getUnitPrice` para cada produto
-5. No `handleConfirm`, passar o `avgPrice` correto baseado na quantidade
+- **Linha ~114**: Após `uploadBrandFiles`, validar se `fileUrls` retornou vazio antes de prosseguir:
+  ```typescript
+  fileUrls = await uploadBrandFiles(files);
+  if (!fileUrls || fileUrls.length === 0) {
+    setErrorMessage('Falha no upload dos arquivos. Tente novamente.');
+    setSubmitState('error');
+    return;
+  }
+  ```
 
-### Visual no card (quando selecionado)
+- **Linha ~144**: Já está correto (`result.error || 'Erro ao enviar...'`). Nenhuma alteração necessária.
 
-```text
-[Produto X]
-R$ 195,00 /un  ← preço atual para 10 un
-"Quanto mais, menor o preço"
+- **Linhas 329-332**: Trocar o bloco de mensagem de arquivo obrigatório para sempre visível quando `files.length === 0`:
+  ```typescript
+  {files.length === 0 && (
+    <p className={`text-xs ${fileError ? 'text-destructive' : 'text-muted-foreground'}`}>
+      {fileError || 'Obrigatório — envie a logo da sua marca para prosseguir'}
+    </p>
+  )}
+  ```
 
-[10] [50] [100] [500]   ← chips de quantidade
-[-] 10 [+]              ← ajuste fino
-Subtotal aprox.: R$ 1.950,00
+**2. `supabase/functions/submit-lead/index.ts`** — Linha ~148-154:
+
+Retornar o primeiro erro de validação legível em vez de mensagem genérica:
+```typescript
+const firstError = validationResult.error.errors[0];
+const errorMessage = firstError?.message || 'Dados inválidos. Verifique os campos.';
+return new Response(
+  JSON.stringify({ success: false, error: errorMessage }),
+  { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+);
 ```
 
-Quando o usuário muda a quantidade para 100, o preço atualiza automaticamente para refletir a faixa menor.
+Re-deploy da edge function após a alteração.
 
