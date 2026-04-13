@@ -74,7 +74,7 @@ const leadSchema = z.object({
   categories: z.array(z.string().max(100)).max(20).optional().default([]),
   path_chosen: z.string().max(100).optional().nullable(),
   colors: colorsSchema,
-  file_urls: z.array(z.string().url().max(500)).min(1, 'Envie pelo menos um arquivo da marca').max(10),
+  file_urls: z.array(z.string().url().max(500)).max(10).optional().default([]),
   selected_products: z.array(
     z.union([
       z.string().max(200),
