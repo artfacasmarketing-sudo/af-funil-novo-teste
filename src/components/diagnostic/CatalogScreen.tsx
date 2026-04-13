@@ -44,7 +44,16 @@ function formatCurrency(value: number): string {
 
 function getUnitPrice(product: Product, qty: number): number {
   const { price_min, price_max } = product;
-  if (price_min === price_max) return price_max;
+  if (price_min === price_max) {
+    // Curva de desconto percentual padrão para produtos sem faixa de preço
+    const base = price_max;
+    if (qty < 10) return base;
+    if (qty < 50) return base * 0.95;
+    if (qty < 100) return base * 0.90;
+    if (qty < 500) return base * 0.85;
+    if (qty < 1000) return base * 0.80;
+    return base * 0.75;
+  }
   if (qty < 10) return price_max;
   if (qty < 50) return price_max * 0.8 + price_min * 0.2;
   if (qty < 100) return price_max * 0.6 + price_min * 0.4;
