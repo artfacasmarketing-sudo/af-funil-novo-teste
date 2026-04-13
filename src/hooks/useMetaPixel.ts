@@ -87,22 +87,6 @@ export function useMetaPixel() {
       return null;
     }
 
-    // Advanced matching data (unhashed - Pixel handles hashing)
-    const advancedMatchingData: Record<string, string> = {};
-    if (params.email) {
-      advancedMatchingData.em = params.email.toLowerCase().trim();
-    }
-    if (params.phone) {
-      // Remove non-digits for phone
-      advancedMatchingData.ph = params.phone.replace(/\D/g, '');
-    }
-
-    // Update user data with advanced matching if available
-    if (Object.keys(advancedMatchingData).length > 0) {
-      window.fbq('init', META_PIXEL_ID, advancedMatchingData);
-      if (import.meta.env.DEV) console.log('[MetaPixel] Advanced matching applied:', Object.keys(advancedMatchingData));
-    }
-
     window.fbq('track', 'Lead', {
       value: params.value || 0,
       currency: 'BRL',

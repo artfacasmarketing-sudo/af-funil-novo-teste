@@ -35,7 +35,7 @@ function checkRateLimit(ip: string): boolean {
 
 // Zod schema for input validation
 const conversionEventSchema = z.object({
-  event_name: z.enum(['ViewContent', 'Lead']),
+  event_name: z.enum(['ViewContent', 'Lead', 'InitiateCheckout']),
   event_id: z.string().min(1).max(200),
   email: z.string().email().max(255).optional(),
   phone: z.string().max(30).optional(),
@@ -155,10 +155,14 @@ serve(async (req) => {
         value: body.value || 0,
         currency: body.currency || 'BRL',
       };
+    } else if (body.event_name === 'InitiateCheckout') {
+      eventData.custom_data = {
+        content_category: 'Diagnóstico',
+      };
     }
 
     // Send to Meta Conversions API
-    const apiUrl = `https://graph.facebook.com/v18.0/${META_PIXEL_ID}/events`;
+    const apiUrl = `https://graph.facebook.com/v21.0/${META_PIXEL_ID}/events`;
 
     const response = await fetch(apiUrl, {
       method: 'POST',
