@@ -42,6 +42,17 @@ function formatCurrency(value: number): string {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
+function getUnitPrice(product: Product, qty: number): number {
+  const { price_min, price_max } = product;
+  if (price_min === price_max) return price_max;
+  if (qty < 10) return price_max;
+  if (qty < 50) return price_max * 0.8 + price_min * 0.2;
+  if (qty < 100) return price_max * 0.6 + price_min * 0.4;
+  if (qty < 500) return price_max * 0.4 + price_min * 0.6;
+  if (qty < 1000) return price_max * 0.2 + price_min * 0.8;
+  return price_min;
+}
+
 export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
   const [selected, setSelected] = useState<Map<string, number>>(new Map());
   const [searchQuery, setSearchQuery] = useState('');
