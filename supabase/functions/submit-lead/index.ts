@@ -146,10 +146,11 @@ Deno.serve(async (req) => {
     const validationResult = leadSchema.safeParse(rawPayload)
     
     if (!validationResult.success) {
-      // Log detailed errors for debugging, but don't expose to client
       console.log('[submit-lead] Validation failed:', JSON.stringify(validationResult.error.errors))
+      const firstError = validationResult.error.errors[0]
+      const errorMessage = firstError?.message || 'Dados inválidos. Verifique os campos.'
       return new Response(
-        JSON.stringify({ success: false, error: 'Dados inválidos. Verifique os campos.' }),
+        JSON.stringify({ success: false, error: errorMessage }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
