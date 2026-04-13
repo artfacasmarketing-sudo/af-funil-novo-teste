@@ -1,49 +1,30 @@
 
-Do I know what the issue is? Sim.
 
-Problema confirmado:
-- A finalização está falhando no backend, antes de gravar o lead.
-- Evidência concreta nos logs da função `submit-lead`: `Validation failed ... path:["file_urls"], message:"Required"`.
-- Em outras palavras: a requisição final está chegando sem `file_urls`.
-- Os leads recentes gravados param antes desse horário de erro, então o bloqueio atual não é banco nem permissão; é validação do payload.
+## Plano: Adicionar coleta de CPF/CNPJ e Inscrição Estadual
 
-O que está acontecendo:
-- A função `submit-lead` exige `file_urls` como array obrigatório.
-- Quando esse campo não vem no body, a validação retorna `Required`, que é genérico e ruim para o usuário.
-- O `ContactScreen.tsx` já tem trava visual e checagem pós-upload, então a correção precisa endurecer os dois lados: envio no client e mensagem no backend.
+### O que será feito
 
-Plano de correção:
-1. `src/lib/supabaseLeadService.ts`
-   - Normalizar `fileUrls` antes do `invoke`:
-     - sempre transformar em array válido (`[]` se vier `undefined`)
-     - enviar sempre `file_urls` explicitamente no payload
-   - Isso elimina o risco de o campo sumir do JSON.
+Adicionar campos de documento (CPF ou CNPJ) e inscrição estadual no formulário de contato, e enviar esses dados no payload para a edge function — exatamente como já está modelado no banco e na função `submit-lead`.
 
-2. `src/components/diagnostic/ContactScreen.tsx`
-   - Manter a trava atual de “sem arquivo não envia”.
-   - Reforçar a guarda final antes do submit: se `fileUrls` vier vazio ou indefinido, abortar e mostrar erro.
-   - Garantir que a UI mostre sempre `result.error` quando a função devolver mensagem.
+### Alterações
 
-3. `supabase/functions/submit-lead/index.ts`
-   - Ajustar a validação de `file_urls` para que campo ausente e array vazio retornem a mesma mensagem clara:
-     - `Envie pelo menos um arquivo da marca`
-   - Melhor abordagem:
-     - `file_urls` opcional com default `[]`
-     - validação no `superRefine` exigindo pelo menos 1 item
-   - Assim deixa de aparecer `Required`.
+**1. `src/components/diagnostic/ContactScreen.tsx`**
 
-4. Validação final
-   - Reimplantar a função `submit-lead`
-   - Testar o funil completo no preview:
-     - sem arquivo: deve bloquear no front
-     - com arquivo: deve concluir
-     - se falhar, deve mostrar a mensagem legível exata
+- Adicionar estados: `documentType` (toggle CPF/CNPJ), `documentNumber`, `stateRegistration`
+- Adicionar no formulário (após "Nome da empresa"):
+  - Toggle CPF / CNPJ (dois botões lado a lado)
+  - Input de número do documento com máscara visual
+  - Se CNPJ selecionado: campo adicional "Inscrição Estadual (opcional)"
+- Passar os novos campos no `submitLeadSimplified`
 
-Arquivos envolvidos:
-- `src/components/diagnostic/ContactScreen.tsx`
-- `src/lib/supabaseLeadService.ts`
-- `supabase/functions/submit-lead/index.ts`
+**2. `src/lib/supabaseLeadService.ts`**
 
-Detalhe técnico:
-- Revisei também a tabela `leads` e as políticas de inserção pública; não há sinal de bloqueio por RLS agora.
-- O erro atual é payload inválido por ausência de `file_urls`.
+- Expandir a interface do `submitLeadSimplified` para aceitar `documentType`, `documentNumber`, `stateRegistration`
+- Incluir esses campos no payload enviado à edge function (já existem as chaves `document_type`, `document_number`, `state_registration` no payload — basta preenchê-las)
+
+### Detalhes técnicos
+
+- A edge function `submit-lead` já valida e aceita `document_type`, `document_number` e `state_registration` — nenhuma alteração no backend é necessária
+- A tabela `leads` já tem as colunas `document_type`, `document_number` e `state_registration` — nenhuma migração necessária
+- Os campos de documento são opcionais (não bloqueiam o envio)
+
