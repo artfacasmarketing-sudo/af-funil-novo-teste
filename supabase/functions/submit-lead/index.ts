@@ -92,6 +92,9 @@ const leadSchema = z.object({
   referrer: z.string().max(500).optional().nullable(),
   page_url: z.string().max(500).optional().nullable(),
 }).superRefine((data, ctx) => {
+  if (!data.file_urls || data.file_urls.length === 0) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Envie pelo menos um arquivo da marca', path: ['file_urls'] })
+  }
   if (!data.document_number) return
   const digits = data.document_number.replace(/\D/g, '')
   if (data.document_type === 'cpf' && digits.length !== 11) {
