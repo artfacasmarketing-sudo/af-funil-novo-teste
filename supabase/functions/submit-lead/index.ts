@@ -82,12 +82,17 @@ const leadSchema = z.object({
   selected_products: z.array(
     z.union([
       z.string().max(200),
-      z.object({ name: z.string().max(200), sku: z.string().max(100) }),
+      z.object({
+        name: z.string().max(200),
+        sku: z.string().max(100),
+        quantity: z.number().optional(),
+        unit_price: z.number().optional(),
+      }),
     ])
   ).max(50).optional().default([]),
   must_have: z.string().max(1000).optional().nullable(),
-  document_type: z.enum(['cpf', 'cnpj']).optional().nullable(),
-  document_number: z.string().max(20).optional().nullable(),
+  document_type: z.enum(['cpf', 'cnpj']),
+  document_number: z.string().min(11, 'Documento inválido').max(20),
   state_registration: z.string().max(30).optional().nullable(),
   presentation_preference: z.enum(['whatsapp', 'call']).optional().nullable(),
   scheduled_date: z.string().max(20).optional().nullable(),

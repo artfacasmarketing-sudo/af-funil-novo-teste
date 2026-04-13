@@ -33,6 +33,7 @@ export function ContactScreen({ selectedProducts, onCelebrate }: ContactScreenPr
   const [company, setCompany] = useState('');
   const [documentType, setDocumentType] = useState<'cpf' | 'cnpj'>('cnpj');
   const [documentNumber, setDocumentNumber] = useState('');
+  const [documentError, setDocumentError] = useState('');
   const [stateRegistration, setStateRegistration] = useState('');
   const [files, setFiles] = useState<File[]>([]);
   const [fileError, setFileError] = useState('');
@@ -97,6 +98,23 @@ export function ContactScreen({ selectedProducts, onCelebrate }: ContactScreenPr
     if (!name.trim()) { alert('Por favor, preencha seu nome.'); return; }
     if (!whatsapp.trim()) { setWhatsappError('WhatsApp é obrigatório.'); return; }
     if (!validateWhatsapp(whatsapp)) return;
+
+    // Validate document
+    const docDigits = documentNumber.replace(/\D/g, '');
+    if (!docDigits) {
+      setDocumentError('Documento é obrigatório.');
+      return;
+    }
+    if (documentType === 'cpf' && docDigits.length !== 11) {
+      setDocumentError('CPF deve ter 11 dígitos.');
+      return;
+    }
+    if (documentType === 'cnpj' && docDigits.length !== 14) {
+      setDocumentError('CNPJ deve ter 14 dígitos.');
+      return;
+    }
+    setDocumentError('');
+
     if (files.length === 0) {
       setFileError('Envie pelo menos um arquivo com a logo da sua marca.');
       return;
@@ -297,7 +315,7 @@ export function ContactScreen({ selectedProducts, onCelebrate }: ContactScreenPr
             {/* Document type toggle + inputs */}
             <div className="space-y-3">
               <label className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground">
-                Documento (opcional)
+                Documento <span className="text-destructive">*</span>
               </label>
               <div className="flex gap-2">
                 <button
@@ -327,11 +345,12 @@ export function ContactScreen({ selectedProducts, onCelebrate }: ContactScreenPr
               </div>
               <Input
                 value={documentNumber}
-                onChange={(e) => setDocumentNumber(e.target.value)}
+                onChange={(e) => { setDocumentNumber(e.target.value); if (documentError) setDocumentError(''); }}
                 placeholder={documentType === 'cpf' ? '000.000.000-00' : '00.000.000/0000-00'}
-                className="bg-secondary border-border py-6 text-base"
+                className={`bg-secondary border-border py-6 text-base ${documentError ? 'border-destructive' : ''}`}
                 disabled={submitState === 'loading'}
               />
+              {documentError && <p className="text-destructive text-xs">{documentError}</p>}
               {documentType === 'cnpj' && (
                 <Input
                   value={stateRegistration}
