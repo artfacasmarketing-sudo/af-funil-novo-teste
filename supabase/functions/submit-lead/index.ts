@@ -74,7 +74,7 @@ const leadSchema = z.object({
   categories: z.array(z.string().max(100)).max(20).optional().default([]),
   path_chosen: z.string().max(100).optional().nullable(),
   colors: colorsSchema,
-  file_urls: z.array(z.string().url().max(500)).min(1, 'Envie pelo menos um arquivo da marca').max(10),
+  file_urls: z.array(z.string().url().max(500)).max(10).optional().default([]),
   selected_products: z.array(
     z.union([
       z.string().max(200),
@@ -92,6 +92,9 @@ const leadSchema = z.object({
   referrer: z.string().max(500).optional().nullable(),
   page_url: z.string().max(500).optional().nullable(),
 }).superRefine((data, ctx) => {
+  if (!data.file_urls || data.file_urls.length === 0) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Envie pelo menos um arquivo da marca', path: ['file_urls'] })
+  }
   if (!data.document_number) return
   const digits = data.document_number.replace(/\D/g, '')
   if (data.document_type === 'cpf' && digits.length !== 11) {
