@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 
 interface ConversionEventData {
-  eventName: 'ViewContent' | 'Lead';
+  eventName: 'ViewContent' | 'Lead' | 'InitiateCheckout';
   eventId: string;
   email?: string;
   phone?: string;
