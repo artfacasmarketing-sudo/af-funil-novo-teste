@@ -113,6 +113,12 @@ export function ContactScreen({ selectedProducts, onCelebrate }: ContactScreenPr
         return;
       }
 
+      if (!fileUrls || fileUrls.length === 0) {
+        setErrorMessage('Falha no upload dos arquivos. Tente novamente.');
+        setSubmitState('error');
+        return;
+      }
+
       const result = await submitLeadSimplified(
         { name, whatsapp, email, company },
         selectedProducts,
@@ -326,9 +332,10 @@ export function ContactScreen({ selectedProducts, onCelebrate }: ContactScreenPr
                   ))}
                 </div>
               )}
-              {fileError && <p className="text-destructive text-xs">{fileError}</p>}
-              {files.length === 0 && !fileError && (
-                <p className="text-muted-foreground text-xs">Obrigatório para montarmos o orçamento personalizado</p>
+              {files.length === 0 && (
+                <p className={`text-xs ${fileError ? 'text-destructive' : 'text-muted-foreground'}`}>
+                  {fileError || 'Obrigatório — envie a logo da sua marca para prosseguir'}
+                </p>
               )}
             </div>
 
