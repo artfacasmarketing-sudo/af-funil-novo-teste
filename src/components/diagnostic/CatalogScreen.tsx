@@ -222,7 +222,7 @@ export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
                 const isSelected = selected.has(product.id);
                 const qty = selected.get(product.id) || 0;
                 const unitPrice = getUnitPrice(product, qty || 10);
-                const hasTieredPricing = product.price_min < product.price_max;
+                const hasTieredPricing = product.price_min < product.price_max || product.price_min === product.price_max;
 
                 return (
                   <div
