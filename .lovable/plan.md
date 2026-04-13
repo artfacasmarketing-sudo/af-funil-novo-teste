@@ -1,46 +1,45 @@
 
 
-## Plano: Corrigir erro de CORS nas Edge Functions
+## Plano: Preço por unidade dinâmico baseado na quantidade
 
-### Problema identificado
+### Lógica de preços
 
-Testei a edge function `submit-lead` diretamente e ela funciona perfeitamente (retorna `success: true`). O problema é que o browser bloqueia a resposta por **CORS incompleto**.
+Cada produto tem `price_min` (preço mais barato, para grandes quantidades) e `price_max` (preço mais caro, para poucas unidades). A lógica será:
 
-As funções `submit-lead` e `meta-conversions` não incluem o header `Access-Control-Allow-Methods` na resposta do preflight (`OPTIONS`). Alguns browsers exigem esse header para permitir requisições `POST`. Sem ele, o `supabase.functions.invoke()` retorna um erro opaco (provavelmente o "erro na ID Fusion" que você está vendo).
+| Quantidade | Preço unitário |
+|---|---|
+| 1–9 | `price_max` |
+| 10–49 | interpolação 80% max / 20% min |
+| 50–99 | interpolação 60% max / 40% min |
+| 100–499 | interpolação 40% max / 60% min |
+| 500–999 | interpolação 20% max / 80% min |
+| 1000+ | `price_min` |
 
-### Solução
+Para produtos onde `price_min === price_max`, o preço fica fixo independente da quantidade.
 
-**Arquivo: `supabase/functions/submit-lead/index.ts`**
-- Adicionar `'Access-Control-Allow-Methods': 'POST, OPTIONS'` ao `getCorsHeaders()`
-- Importar `corsHeaders` do SDK do Supabase (padrão recomendado) OU adicionar o header manualmente
+### Alterações
 
-**Arquivo: `supabase/functions/meta-conversions/index.ts`**
-- Mesma correção: adicionar `Access-Control-Allow-Methods`
+**Arquivo: `src/components/diagnostic/CatalogScreen.tsx`**
 
-**Arquivo: `src/components/diagnostic/ContactScreen.tsx`**
-- Tornar `trackLeadServer` fire-and-forget (não aguardar resposta), para que um eventual erro no Meta Conversions não bloqueie a tela de sucesso
+1. Criar função `getUnitPrice(product, quantity)` com a tabela de faixas acima
+2. Substituir todos os usos de `(price_min + price_max) / 2` por `getUnitPrice(product, qty)`
+3. No card do produto:
+   - Mostrar o preço unitário atual baseado na quantidade selecionada
+   - Adicionar indicador visual tipo "↓ preço reduz com mais unidades" quando `price_min < price_max`
+4. No `totalEstimate`, usar `getUnitPrice` para cada produto
+5. No `handleConfirm`, passar o `avgPrice` correto baseado na quantidade
 
-### Alterações específicas
+### Visual no card (quando selecionado)
 
-Nos dois edge functions, a função `getCorsHeaders` passará a retornar:
+```text
+[Produto X]
+R$ 195,00 /un  ← preço atual para 10 un
+"Quanto mais, menor o preço"
 
-```typescript
-return {
-  'Access-Control-Allow-Origin': allowedOrigin,
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
+[10] [50] [100] [500]   ← chips de quantidade
+[-] 10 [+]              ← ajuste fino
+Subtotal aprox.: R$ 1.950,00
 ```
 
-No `ContactScreen.tsx`, a chamada `trackLeadServer` será feita sem `await`:
-
-```typescript
-// Fire-and-forget: não bloqueia a UI
-trackLeadServer({ ... }).catch(() => {});
-setSubmitState('success'); // mostra sucesso imediatamente
-```
-
-### Deploy
-- Re-deploy das duas edge functions
-- Teste com `curl_edge_functions` para validar
+Quando o usuário muda a quantidade para 100, o preço atualiza automaticamente para refletir a faixa menor.
 
