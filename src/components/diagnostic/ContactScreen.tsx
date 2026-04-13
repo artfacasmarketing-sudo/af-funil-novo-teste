@@ -31,6 +31,9 @@ export function ContactScreen({ selectedProducts, onCelebrate }: ContactScreenPr
   const [whatsappError, setWhatsappError] = useState('');
   const [email, setEmail] = useState('');
   const [company, setCompany] = useState('');
+  const [documentType, setDocumentType] = useState<'cpf' | 'cnpj'>('cnpj');
+  const [documentNumber, setDocumentNumber] = useState('');
+  const [stateRegistration, setStateRegistration] = useState('');
   const [files, setFiles] = useState<File[]>([]);
   const [fileError, setFileError] = useState('');
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
@@ -120,7 +123,7 @@ export function ContactScreen({ selectedProducts, onCelebrate }: ContactScreenPr
       }
 
       const result = await submitLeadSimplified(
-        { name, whatsapp, email, company },
+        { name, whatsapp, email, company, documentType, documentNumber: documentNumber.trim() || undefined, stateRegistration: stateRegistration.trim() || undefined },
         selectedProducts,
         fileUrls,
         { selectedColors, brandFlag, customHex }
@@ -290,6 +293,55 @@ export function ContactScreen({ selectedProducts, onCelebrate }: ContactScreenPr
               className="bg-secondary border-border py-6 text-base"
               disabled={submitState === 'loading'}
             />
+
+            {/* Document type toggle + inputs */}
+            <div className="space-y-3">
+              <label className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground">
+                Documento (opcional)
+              </label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDocumentType('cpf')}
+                  className={`flex-1 rounded-xl py-2.5 text-sm font-medium border transition-colors ${
+                    documentType === 'cpf'
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-secondary border-border text-muted-foreground hover:text-foreground'
+                  }`}
+                  disabled={submitState === 'loading'}
+                >
+                  CPF
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDocumentType('cnpj')}
+                  className={`flex-1 rounded-xl py-2.5 text-sm font-medium border transition-colors ${
+                    documentType === 'cnpj'
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-secondary border-border text-muted-foreground hover:text-foreground'
+                  }`}
+                  disabled={submitState === 'loading'}
+                >
+                  CNPJ
+                </button>
+              </div>
+              <Input
+                value={documentNumber}
+                onChange={(e) => setDocumentNumber(e.target.value)}
+                placeholder={documentType === 'cpf' ? '000.000.000-00' : '00.000.000/0000-00'}
+                className="bg-secondary border-border py-6 text-base"
+                disabled={submitState === 'loading'}
+              />
+              {documentType === 'cnpj' && (
+                <Input
+                  value={stateRegistration}
+                  onChange={(e) => setStateRegistration(e.target.value)}
+                  placeholder="Inscrição Estadual (opcional)"
+                  className="bg-secondary border-border py-6 text-base"
+                  disabled={submitState === 'loading'}
+                />
+              )}
+            </div>
 
             {/* Logo upload */}
             <div className="space-y-2">

@@ -286,7 +286,7 @@ export async function submitLeadToCloud(
  * Simplified lead submission for the catalog flow (no diagnostic questions)
  */
 export async function submitLeadSimplified(
-  formData: { name: string; whatsapp: string; email?: string; company?: string },
+  formData: { name: string; whatsapp: string; email?: string; company?: string; documentType?: 'cpf' | 'cnpj'; documentNumber?: string; stateRegistration?: string },
   products: { id: string; name: string; sku: string; quantity: number; avgPrice: number }[],
   fileUrls: string[] = [],
   colorData?: { selectedColors: string[]; brandFlag: boolean; customHex: string }
@@ -315,9 +315,9 @@ export async function submitLeadSimplified(
     file_urls: Array.isArray(fileUrls) ? fileUrls : [],
     selected_products: products.map(p => ({ name: p.name, sku: p.sku, quantity: p.quantity, unit_price: p.avgPrice })),
     must_have: null,
-    document_type: null,
-    document_number: null,
-    state_registration: null,
+    document_type: formData.documentType || null,
+    document_number: formData.documentNumber || null,
+    state_registration: formData.stateRegistration || null,
     presentation_preference: null,
     scheduled_date: null,
     scheduled_time: null,
