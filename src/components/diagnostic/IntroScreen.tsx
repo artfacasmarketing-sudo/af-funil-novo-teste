@@ -2,6 +2,8 @@ import { ShieldCheck, Award, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TrustedBrandsMarquee } from './TrustedBrandsMarquee';
 import { useMetaPixel } from '@/hooks/useMetaPixel';
+import { trackInitiateCheckoutServer } from '@/lib/metaConversions';
+import { useMetaCookies } from '@/contexts/MetaCookieContext';
 import logoAf from '@/assets/logo-af.png';
 
 interface IntroScreenProps {
@@ -10,10 +12,18 @@ interface IntroScreenProps {
 
 export function IntroScreen({ onStart }: IntroScreenProps) {
   const { trackInitiateCheckout } = useMetaPixel();
+  const { fbp, fbc } = useMetaCookies();
 
   const handleStart = () => {
-    // Track InitiateCheckout event
-    trackInitiateCheckout();
+    const eventId = trackInitiateCheckout();
+    if (eventId) {
+      trackInitiateCheckoutServer({
+        eventId,
+        fbp: fbp || undefined,
+        fbc: fbc || undefined,
+        eventSourceUrl: window.location.href,
+      });
+    }
     onStart();
   };
   return (

@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 
 interface ConversionEventData {
-  eventName: 'ViewContent' | 'Lead';
+  eventName: 'ViewContent' | 'Lead' | 'InitiateCheckout';
   eventId: string;
   email?: string;
   phone?: string;
@@ -33,7 +33,7 @@ export async function sendConversionEvent(data: ConversionEventData): Promise<bo
         event_name: data.eventName,
         event_id: data.eventId,
         email: data.email,
-        phone: data.phone,
+        phone: data.phone ? (data.phone.replace(/\D/g, '').startsWith('55') ? data.phone : `55${data.phone.replace(/\D/g, '')}`) : undefined,
         content_name: data.contentName,
         content_category: data.contentCategory,
         value: data.value,
@@ -66,16 +66,40 @@ export async function sendConversionEvent(data: ConversionEventData): Promise<bo
 /**
  * Track ViewContent event (browser + server)
  */
-export async function trackViewContentServer(
-  eventId: string,
-  contentName: string,
-  contentCategory?: string
-): Promise<boolean> {
+export async function trackViewContentServer(params: {
+  eventId: string;
+  contentName: string;
+  contentCategory?: string;
+  fbp?: string;
+  fbc?: string;
+  eventSourceUrl?: string;
+}): Promise<boolean> {
   return sendConversionEvent({
     eventName: 'ViewContent',
-    eventId,
-    contentName,
-    contentCategory,
+    eventId: params.eventId,
+    contentName: params.contentName,
+    contentCategory: params.contentCategory,
+    fbp: params.fbp,
+    fbc: params.fbc,
+    eventSourceUrl: params.eventSourceUrl,
+  });
+}
+
+/**
+ * Track InitiateCheckout event (browser + server)
+ */
+export async function trackInitiateCheckoutServer(params: {
+  eventId: string;
+  fbp?: string;
+  fbc?: string;
+  eventSourceUrl?: string;
+}): Promise<boolean> {
+  return sendConversionEvent({
+    eventName: 'InitiateCheckout',
+    eventId: params.eventId,
+    fbp: params.fbp,
+    fbc: params.fbc,
+    eventSourceUrl: params.eventSourceUrl,
   });
 }
 

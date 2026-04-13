@@ -5,6 +5,7 @@ import { DiagnosticResults } from '@/lib/resultsCalculator';
 import { LogoHeader } from './LogoHeader';
 import { useMetaPixel } from '@/hooks/useMetaPixel';
 import { trackViewContentServer } from '@/lib/metaConversions';
+import { useMetaCookies } from '@/contexts/MetaCookieContext';
 
 interface ResultsScreenProps {
   results: DiagnosticResults;
@@ -13,6 +14,7 @@ interface ResultsScreenProps {
 
 export function ResultsScreen({ results, onPathSelected }: ResultsScreenProps) {
   const { trackViewContent } = useMetaPixel();
+  const { fbp, fbc } = useMetaCookies();
   const hasTracked = useRef(false);
 
   useEffect(() => {
@@ -22,9 +24,16 @@ export function ResultsScreen({ results, onPathSelected }: ResultsScreenProps) {
     const eventId = trackViewContent('Resultados do Diagnóstico', results.direction);
     
     if (eventId) {
-      trackViewContentServer(eventId, 'Resultados do Diagnóstico', results.direction);
+      trackViewContentServer({
+        eventId,
+        contentName: 'Resultados do Diagnóstico',
+        contentCategory: results.direction,
+        fbp: fbp || undefined,
+        fbc: fbc || undefined,
+        eventSourceUrl: window.location.href,
+      });
     }
-  }, [results.direction, trackViewContent]);
+  }, [results.direction, trackViewContent, fbp, fbc]);
 
   return (
     <div className="min-h-screen p-4 sm:p-6 lg:p-8 py-8 sm:py-12">
