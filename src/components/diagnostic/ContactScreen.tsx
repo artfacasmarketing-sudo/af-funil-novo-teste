@@ -124,8 +124,11 @@ export function ContactScreen({ selectedProducts, onCelebrate }: ContactScreenPr
         const eventId = result.lead_id;
         trackLead({ eventId, email: email || undefined, phone: whatsapp, value: totalEstimate });
 
+        setSubmitState('success');
+
+        // Fire-and-forget: não bloqueia a UI
         const nameParts = name.trim().split(/\s+/);
-        await trackLeadServer({
+        trackLeadServer({
           eventId,
           email: email || undefined,
           phone: whatsapp,
@@ -136,9 +139,7 @@ export function ContactScreen({ selectedProducts, onCelebrate }: ContactScreenPr
           firstName: nameParts[0] || '',
           lastName: nameParts.slice(1).join(' ') || undefined,
           country: 'br',
-        });
-
-        setSubmitState('success');
+        }).catch(() => {});
       } else {
         setErrorMessage(result.error || 'Erro ao enviar. Tente novamente.');
         setSubmitState('error');
