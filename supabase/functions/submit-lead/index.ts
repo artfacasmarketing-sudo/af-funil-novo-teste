@@ -6,7 +6,11 @@ const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || '';
 function getCorsHeaders(req: Request) {
   const origin = req.headers.get('origin') || '';
   let allowedOrigin = ALLOWED_ORIGIN || '*';
-  if (origin === ALLOWED_ORIGIN || origin.endsWith('.lovable.app')) {
+  if (
+    origin === ALLOWED_ORIGIN ||
+    origin.endsWith('.lovable.app') ||
+    origin.endsWith('.lovableproject.com')
+  ) {
     allowedOrigin = origin;
   }
   return {
