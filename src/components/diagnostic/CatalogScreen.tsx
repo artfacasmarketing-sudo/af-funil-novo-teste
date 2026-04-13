@@ -113,8 +113,7 @@ export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
     selected.forEach((qty, id) => {
       const p = products.find(prod => prod.id === id);
       if (p) {
-        const avg = (p.price_min + p.price_max) / 2;
-        total += avg * qty;
+        total += getUnitPrice(p, qty) * qty;
       }
     });
     return total;
@@ -130,7 +129,7 @@ export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
           name: p.name,
           sku: p.sku,
           quantity: qty,
-          avgPrice: (p.price_min + p.price_max) / 2,
+          avgPrice: getUnitPrice(p, qty),
         });
       }
     });
@@ -213,7 +212,8 @@ export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
               {filteredProducts.map(product => {
                 const isSelected = selected.has(product.id);
                 const qty = selected.get(product.id) || 0;
-                const avgPrice = (product.price_min + product.price_max) / 2;
+                const unitPrice = getUnitPrice(product, qty || 10);
+                const hasTieredPricing = product.price_min < product.price_max;
 
                 return (
                   <div
@@ -250,9 +250,12 @@ export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
                         {product.name}
                       </h3>
                       <p className="text-primary font-bold text-sm sm:text-base">
-                        {formatCurrency(avgPrice)}
+                        {formatCurrency(unitPrice)}
                         <span className="text-[9px] text-muted-foreground font-normal ml-1">aprox. / un</span>
                       </p>
+                      {hasTieredPricing && !isSelected && (
+                        <p className="text-[9px] text-emerald-600 font-medium">↓ Quanto mais, menor o preço</p>
+                      )}
                     </div>
 
                     {/* Quantity controls - only when selected */}
@@ -293,8 +296,13 @@ export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
                           </button>
                         </div>
                         <p className="text-center text-[10px] text-muted-foreground mono-font">
-                          Subtotal aprox.: {formatCurrency(avgPrice * qty)}
+                          Subtotal aprox.: {formatCurrency(unitPrice * qty)}
                         </p>
+                        {hasTieredPricing && (
+                          <p className="text-center text-[9px] text-emerald-600 font-medium">
+                            ↓ Quanto mais, menor o preço
+                          </p>
+                        )}
                       </div>
                     )}
                   </div>
