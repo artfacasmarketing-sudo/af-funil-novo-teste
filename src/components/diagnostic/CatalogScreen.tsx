@@ -42,6 +42,17 @@ function formatCurrency(value: number): string {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
+function getUnitPrice(product: Product, qty: number): number {
+  const { price_min, price_max } = product;
+  if (price_min === price_max) return price_max;
+  if (qty < 10) return price_max;
+  if (qty < 50) return price_max * 0.8 + price_min * 0.2;
+  if (qty < 100) return price_max * 0.6 + price_min * 0.4;
+  if (qty < 500) return price_max * 0.4 + price_min * 0.6;
+  if (qty < 1000) return price_max * 0.2 + price_min * 0.8;
+  return price_min;
+}
+
 export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
   const [selected, setSelected] = useState<Map<string, number>>(new Map());
   const [searchQuery, setSearchQuery] = useState('');
@@ -102,8 +113,7 @@ export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
     selected.forEach((qty, id) => {
       const p = products.find(prod => prod.id === id);
       if (p) {
-        const avg = (p.price_min + p.price_max) / 2;
-        total += avg * qty;
+        total += getUnitPrice(p, qty) * qty;
       }
     });
     return total;
@@ -119,7 +129,7 @@ export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
           name: p.name,
           sku: p.sku,
           quantity: qty,
-          avgPrice: (p.price_min + p.price_max) / 2,
+          avgPrice: getUnitPrice(p, qty),
         });
       }
     });
@@ -202,7 +212,8 @@ export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
               {filteredProducts.map(product => {
                 const isSelected = selected.has(product.id);
                 const qty = selected.get(product.id) || 0;
-                const avgPrice = (product.price_min + product.price_max) / 2;
+                const unitPrice = getUnitPrice(product, qty || 10);
+                const hasTieredPricing = product.price_min < product.price_max;
 
                 return (
                   <div
@@ -239,9 +250,12 @@ export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
                         {product.name}
                       </h3>
                       <p className="text-primary font-bold text-sm sm:text-base">
-                        {formatCurrency(avgPrice)}
+                        {formatCurrency(unitPrice)}
                         <span className="text-[9px] text-muted-foreground font-normal ml-1">aprox. / un</span>
                       </p>
+                      {hasTieredPricing && !isSelected && (
+                        <p className="text-[9px] text-emerald-600 font-medium">↓ Quanto mais, menor o preço</p>
+                      )}
                     </div>
 
                     {/* Quantity controls - only when selected */}
@@ -282,8 +296,13 @@ export function CatalogScreen({ onConfirm, onClickSFX }: CatalogScreenProps) {
                           </button>
                         </div>
                         <p className="text-center text-[10px] text-muted-foreground mono-font">
-                          Subtotal aprox.: {formatCurrency(avgPrice * qty)}
+                          Subtotal aprox.: {formatCurrency(unitPrice * qty)}
                         </p>
+                        {hasTieredPricing && (
+                          <p className="text-center text-[9px] text-emerald-600 font-medium">
+                            ↓ Quanto mais, menor o preço
+                          </p>
+                        )}
                       </div>
                     )}
                   </div>
