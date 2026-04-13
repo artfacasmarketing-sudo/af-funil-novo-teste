@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { submitLeadSimplified, uploadBrandFiles } from '@/lib/supabaseLeadService';
 import { Loader2, CheckCircle2, AlertCircle, MessageCircle, ShoppingBag, Upload, X, FileIcon } from 'lucide-react';
+import { colorOptions } from '@/data/questions';
 import { LogoHeader } from './LogoHeader';
 import { useMetaPixel } from '@/hooks/useMetaPixel';
 import { trackLeadServer } from '@/lib/metaConversions';
@@ -31,6 +33,9 @@ export function ContactScreen({ selectedProducts, onCelebrate }: ContactScreenPr
   const [company, setCompany] = useState('');
   const [files, setFiles] = useState<File[]>([]);
   const [fileError, setFileError] = useState('');
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [brandFlag, setBrandFlag] = useState(false);
+  const [customHex, setCustomHex] = useState('');
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
