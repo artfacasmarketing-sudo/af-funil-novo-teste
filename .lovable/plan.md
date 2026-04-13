@@ -1,43 +1,49 @@
 
+Do I know what the issue is? Sim.
 
-## Plano: Corrigir tratamento de erros no funil
+Problema confirmado:
+- A finalização está falhando no backend, antes de gravar o lead.
+- Evidência concreta nos logs da função `submit-lead`: `Validation failed ... path:["file_urls"], message:"Required"`.
+- Em outras palavras: a requisição final está chegando sem `file_urls`.
+- Os leads recentes gravados param antes desse horário de erro, então o bloqueio atual não é banco nem permissão; é validação do payload.
 
-### Alterações
+O que está acontecendo:
+- A função `submit-lead` exige `file_urls` como array obrigatório.
+- Quando esse campo não vem no body, a validação retorna `Required`, que é genérico e ruim para o usuário.
+- O `ContactScreen.tsx` já tem trava visual e checagem pós-upload, então a correção precisa endurecer os dois lados: envio no client e mensagem no backend.
 
-**1. `src/components/diagnostic/ContactScreen.tsx`** — 3 correções:
+Plano de correção:
+1. `src/lib/supabaseLeadService.ts`
+   - Normalizar `fileUrls` antes do `invoke`:
+     - sempre transformar em array válido (`[]` se vier `undefined`)
+     - enviar sempre `file_urls` explicitamente no payload
+   - Isso elimina o risco de o campo sumir do JSON.
 
-- **Linha ~114**: Após `uploadBrandFiles`, validar se `fileUrls` retornou vazio antes de prosseguir:
-  ```typescript
-  fileUrls = await uploadBrandFiles(files);
-  if (!fileUrls || fileUrls.length === 0) {
-    setErrorMessage('Falha no upload dos arquivos. Tente novamente.');
-    setSubmitState('error');
-    return;
-  }
-  ```
+2. `src/components/diagnostic/ContactScreen.tsx`
+   - Manter a trava atual de “sem arquivo não envia”.
+   - Reforçar a guarda final antes do submit: se `fileUrls` vier vazio ou indefinido, abortar e mostrar erro.
+   - Garantir que a UI mostre sempre `result.error` quando a função devolver mensagem.
 
-- **Linha ~144**: Já está correto (`result.error || 'Erro ao enviar...'`). Nenhuma alteração necessária.
+3. `supabase/functions/submit-lead/index.ts`
+   - Ajustar a validação de `file_urls` para que campo ausente e array vazio retornem a mesma mensagem clara:
+     - `Envie pelo menos um arquivo da marca`
+   - Melhor abordagem:
+     - `file_urls` opcional com default `[]`
+     - validação no `superRefine` exigindo pelo menos 1 item
+   - Assim deixa de aparecer `Required`.
 
-- **Linhas 329-332**: Trocar o bloco de mensagem de arquivo obrigatório para sempre visível quando `files.length === 0`:
-  ```typescript
-  {files.length === 0 && (
-    <p className={`text-xs ${fileError ? 'text-destructive' : 'text-muted-foreground'}`}>
-      {fileError || 'Obrigatório — envie a logo da sua marca para prosseguir'}
-    </p>
-  )}
-  ```
+4. Validação final
+   - Reimplantar a função `submit-lead`
+   - Testar o funil completo no preview:
+     - sem arquivo: deve bloquear no front
+     - com arquivo: deve concluir
+     - se falhar, deve mostrar a mensagem legível exata
 
-**2. `supabase/functions/submit-lead/index.ts`** — Linha ~148-154:
+Arquivos envolvidos:
+- `src/components/diagnostic/ContactScreen.tsx`
+- `src/lib/supabaseLeadService.ts`
+- `supabase/functions/submit-lead/index.ts`
 
-Retornar o primeiro erro de validação legível em vez de mensagem genérica:
-```typescript
-const firstError = validationResult.error.errors[0];
-const errorMessage = firstError?.message || 'Dados inválidos. Verifique os campos.';
-return new Response(
-  JSON.stringify({ success: false, error: errorMessage }),
-  { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-);
-```
-
-Re-deploy da edge function após a alteração.
-
+Detalhe técnico:
+- Revisei também a tabela `leads` e as políticas de inserção pública; não há sinal de bloqueio por RLS agora.
+- O erro atual é payload inválido por ausência de `file_urls`.
