@@ -1,36 +1,35 @@
 
 
-## Plano: Garantir envio completo do orçamento + documento obrigatório
+## Plano: Aplicar desconto por quantidade a todos os produtos
 
-### Problema atual
-- O `selected_products` no Zod da edge function só aceita `{ name, sku }` — os campos `quantity` e `unit_price` são descartados silenciosamente pela validação
-- O campo de documento está marcado como opcional no frontend e no backend
+### Problema
+A função `getUnitPrice` no `CatalogScreen.tsx` tem esta lógica:
+```
+if (price_min === price_max) return price_max; // ← sai sem desconto
+```
 
-### Alterações
+26 produtos (chapéu, canivetes, kits, mochilas, etc.) têm `price_min = price_max`, então nunca recebem desconto por quantidade.
 
-**1. `supabase/functions/submit-lead/index.ts`** — Expandir schema do Zod
+### Solução
 
-- Alterar o schema de `selected_products` para aceitar objetos com `name`, `sku`, `quantity` e `unit_price`:
-  ```
-  z.object({ name, sku, quantity (optional number), unit_price (optional number) })
-  ```
-- Tornar `document_type` e `document_number` obrigatórios (remover `.optional().nullable()`)
+**`src/components/diagnostic/CatalogScreen.tsx`** — Alterar `getUnitPrice`
 
-**2. `src/components/diagnostic/ContactScreen.tsx`** — Documento obrigatório com validação
+Quando `price_min === price_max`, aplicar uma curva de desconto percentual padrão sobre o preço:
 
-- Remover label "(opcional)" do documento
-- Adicionar validação no `handleSubmit`:
-  - Bloquear envio se `documentNumber` estiver vazio
-  - Validar CPF = 11 dígitos / CNPJ = 14 dígitos
-  - Mostrar erro inline abaixo do campo
-- Adicionar estado `documentError` para feedback visual
+| Quantidade | Desconto |
+|-----------|----------|
+| 1-9       | 0%       |
+| 10-49     | 5%       |
+| 50-99     | 10%      |
+| 100-499   | 15%      |
+| 500-999   | 20%      |
+| 1000+     | 25%      |
 
-**3. `src/lib/supabaseLeadService.ts`** — Já envia `quantity` e `unit_price` (sem mudança necessária)
+Assim, o chapéu de R$50 com 100 unidades mostraria ~R$42,50/un em vez de R$50 fixo.
 
-A linha 316 já mapeia `{ name, sku, quantity, unit_price }` — o problema é só o Zod na edge function que descarta os campos extras.
+### Arquivo alterado
+- `src/components/diagnostic/CatalogScreen.tsx` (apenas a função `getUnitPrice`)
 
-### Detalhes técnicos
-- A tabela `leads` armazena `selected_products` como `ARRAY/jsonb`, então os campos extras são salvos automaticamente sem migração
-- O webhook n8n já recebe o payload completo incluindo `selected_products` com todos os campos
-- A edge function precisa ser re-deployada após a alteração do schema
+### Observação
+Os percentuais acima são uma sugestão. Se preferir valores diferentes, é só informar antes de eu implementar.
 
