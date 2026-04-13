@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { submitLeadSimplified, uploadBrandFiles } from '@/lib/supabaseLeadService';
 import { Loader2, CheckCircle2, AlertCircle, MessageCircle, ShoppingBag, Upload, X, FileIcon } from 'lucide-react';
+import { colorOptions } from '@/data/questions';
 import { LogoHeader } from './LogoHeader';
 import { useMetaPixel } from '@/hooks/useMetaPixel';
 import { trackLeadServer } from '@/lib/metaConversions';
@@ -31,6 +33,9 @@ export function ContactScreen({ selectedProducts, onCelebrate }: ContactScreenPr
   const [company, setCompany] = useState('');
   const [files, setFiles] = useState<File[]>([]);
   const [fileError, setFileError] = useState('');
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [brandFlag, setBrandFlag] = useState(false);
+  const [customHex, setCustomHex] = useState('');
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -111,7 +116,8 @@ export function ContactScreen({ selectedProducts, onCelebrate }: ContactScreenPr
       const result = await submitLeadSimplified(
         { name, whatsapp, email, company },
         selectedProducts,
-        fileUrls
+        fileUrls,
+        { selectedColors, brandFlag, customHex }
       );
 
       if (result.success && result.lead_id) {
@@ -323,6 +329,72 @@ export function ContactScreen({ selectedProducts, onCelebrate }: ContactScreenPr
               {files.length === 0 && !fileError && (
                 <p className="text-muted-foreground text-xs">Obrigatório para montarmos o orçamento personalizado</p>
               )}
+            </div>
+
+            {/* Color picker */}
+            <div className="space-y-3">
+              <label className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground">
+                🎨 Cores da campanha (opcional)
+              </label>
+              <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 gap-3 sm:gap-4 py-2">
+                {colorOptions.map(color => {
+                  const isSelected = selectedColors.includes(color.id);
+                  return (
+                    <button
+                      key={color.id}
+                      type="button"
+                      onClick={() => setSelectedColors(prev =>
+                        prev.includes(color.id)
+                          ? prev.filter(c => c !== color.id)
+                          : [...prev, color.id]
+                      )}
+                      className="group flex flex-col items-center gap-1.5 sm:gap-2 transition-all duration-200"
+                      disabled={submitState === 'loading'}
+                    >
+                      <div
+                        className={`
+                          w-12 h-12 sm:w-11 sm:h-11 rounded-full transition-all duration-200
+                          ${color.id === 'black' ? 'border border-zinc-600' : ''}
+                          ${isSelected
+                            ? 'ring-2 ring-primary ring-offset-2 ring-offset-background scale-110'
+                            : 'hover:scale-105 active:scale-95'
+                          }
+                        `}
+                        style={{ backgroundColor: color.hex }}
+                      />
+                      <span className="text-[9px] sm:text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">
+                        {color.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="flex items-start gap-3 py-2">
+                <Checkbox
+                  id="brand-flag"
+                  checked={brandFlag}
+                  onCheckedChange={(checked) => setBrandFlag(checked === true)}
+                  className="mt-0.5"
+                  disabled={submitState === 'loading'}
+                />
+                <label htmlFor="brand-flag" className="text-sm text-muted-foreground cursor-pointer leading-relaxed">
+                  Quero usar as cores da minha marca (enviar depois)
+                </label>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground">
+                  Possui códigos específicos? (HEX / Pantone)
+                </label>
+                <Input
+                  value={customHex}
+                  onChange={(e) => setCustomHex(e.target.value)}
+                  placeholder="#1A2B3C / Pantone 300C..."
+                  className="bg-secondary border-border py-6 text-base"
+                  disabled={submitState === 'loading'}
+                />
+              </div>
             </div>
           </div>
 
