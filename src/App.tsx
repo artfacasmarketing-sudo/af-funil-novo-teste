@@ -7,6 +7,8 @@ import { MetaCookieProvider } from "@/contexts/MetaCookieContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
+import ProductLanding from "./pages/ProductLanding";
+import ThankYou from "./pages/ThankYou";
 
 const queryClient = new QueryClient();
 
