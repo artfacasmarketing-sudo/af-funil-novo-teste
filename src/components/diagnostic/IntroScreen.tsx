@@ -1,6 +1,8 @@
 import { ShieldCheck, Award, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { TrustedBrandsMarquee } from './TrustedBrandsMarquee';
+import { landingProducts } from '@/data/landingProducts';
 import { useMetaPixel } from '@/hooks/useMetaPixel';
 import { trackInitiateCheckoutServer } from '@/lib/metaConversions';
 import { useMetaCookies } from '@/contexts/MetaCookieContext';
