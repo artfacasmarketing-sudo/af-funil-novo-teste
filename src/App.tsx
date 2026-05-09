@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
 import ProductLanding from "./pages/ProductLanding";
 import ThankYou from "./pages/ThankYou";
+import LandingsIndex from "./pages/LandingsIndex";
 
 const queryClient = new QueryClient();
 
