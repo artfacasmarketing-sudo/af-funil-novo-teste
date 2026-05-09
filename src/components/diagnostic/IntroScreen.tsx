@@ -87,6 +87,30 @@ export function IntroScreen({ onStart }: IntroScreenProps) {
               </span>
             </div>
           </div>
+
+          {/* Landing pages quick access */}
+          <div className="pt-8 sm:pt-10 border-t border-border/30 mt-8">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70 mb-3 font-semibold">
+              Landing pages de produto
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              {Object.values(landingProducts).map((p) => (
+                <Link
+                  key={p.slug}
+                  to={`/p/${p.slug}`}
+                  className="px-3 py-1.5 rounded-full border border-border/60 text-xs text-muted-foreground hover:text-primary hover:border-primary/60 transition-colors"
+                >
+                  {p.name}
+                </Link>
+              ))}
+              <Link
+                to="/landings"
+                className="px-3 py-1.5 rounded-full bg-primary/10 border border-primary/40 text-xs text-primary hover:bg-primary/20 transition-colors font-semibold"
+              >
+                Ver todas →
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
 
